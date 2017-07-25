@@ -1,0 +1,52 @@
+{% set tables = [
+    {'tname':'archive',	'fldtime':'archive_dt',	'flderrormsg':'error_msg',	'CommentOperation':'Поиск в архиве'},
+    {'tname':'out',		'fldtime':'enqueue_dt',	'flderrormsg':'error_msg',	'CommentOperation':'Поиск в очереди'},
+    {'tname':'sent',	'fldtime':'dequeue_dt',	'flderrormsg':NULL,			'CommentOperation':'Поиск в отправленных'},
+    {'tname':'error',	'fldtime':'create_dt',	'flderrormsg':'error_msg',	'CommentOperation':'Поиск в ошибках'}
+    ]
+%}
+{# set min_dt = {'year':2017,'month':7,'day':1} #}
+WITH packets AS (
+{% for key, table in tables %}
+
+  -- {{table.CommentOperation}}
+  {% if key>0 %}UNION {% endif %}SELECT
+    substring({{table.tname}}.file_name FROM '\_\d+\_(\d+)\_') :: INTEGER as ndoc,
+    '{{table.tname}}' :: VARCHAR(7) AS tname,
+    {{table.tname}}.id_instance :: SMALLINT AS idapt,
+    {{table.tname}}.id :: INTEGER AS id,
+    {{table.tname}}.{{table.fldtime}} :: TIMESTAMPTZ AS create_dt,
+    {% if table.flderrormsg %}{{table.tname}}.{{table.flderrormsg}}{% else %}NULL{% endif %} :: TEXT AS error_msg
+  FROM
+    repl.b2f_{{table.tname}} {{table.tname}}
+  WHERE
+    {{table.tname}}.enqueue_dt > make_date({{mddoc.year}},{{mddoc.month}},{{mddoc.day}}) :: TIMESTAMPTZ
+    AND {{table.tname}}.pack_type = 'IN_SUPP'
+    AND {{table.tname}}.id_b2f_bc IS NULL
+    AND {{table.tname}}.id_instance IN ({{idapts|join(',')}})
+{% endfor %}
+)
+
+-- Поиск только последних пакетов
+SELECT
+  a.ndoc      :: INTEGER     AS ndoc,
+  a.idapt     :: SMALLINT    AS idapt,
+  a.tname     :: VARCHAR(7)  AS tname,
+  a.id        :: INTEGER     AS npack,
+  a.create_dt :: TIMESTAMPTZ AS data,
+  a.create_dt :: DATE        AS data_d,
+  a.create_dt :: TIME        AS data_t,
+  a.error_msg :: TEXT        AS msg
+FROM
+  packets a
+  INNER JOIN (
+    SELECT
+      ndoc      as ndoc,
+      MAX(b.id) as mid
+    FROM
+      packets b
+	WHERE b.ndoc IN ({{ndocs|join(',')}})
+    GROUP BY
+      b.ndoc ) c
+  ON a.id = c.mid
+  WHERE a.ndoc IN ({{ndocs|join(',')}})
