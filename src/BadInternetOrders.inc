@@ -3,12 +3,11 @@
 namespace AveWd;
 
 use AveWd\Console\Command\Command;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Translation\Loader\IniFileLoader;
-use Symfony\Component\Yaml\Yaml;
 
 class BadInternetOrder extends Command
 {
@@ -44,13 +43,16 @@ class BadInternetOrder extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /** @var FormatterHelper $formatter */
+        $formatter = &$this->formatter;
+
         parent::execute($input, $output);
 
-        $output->writeln('<info>Готовим PDO</info>');
+        $output->writeln('Готовим PDO');
         $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn, $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
         $this->_pg__repl = new \PDO($this->config->database->transport->dsn, $this->config->database->transport->username, $this->config->database->transport->password);
 
-        $output->writeln('<info>Настраиваем драйвер БД</info>');
+        $output->writeln('Настраиваем драйвер БД');
         // Генерировать исключение при ошибках
         $this->_pg__ave_skd->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $this->_pg__repl->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -66,24 +68,28 @@ class BadInternetOrder extends Command
 
 
         // Запрос в 1С, выбираем плохие интенет-заказы
-        $output->write('<info>Запрос в 1С, выбираем плохие интенет-заказы:</info>');
+        $output->write('Запрос в 1С, выбираем плохие интенет-заказы:');
         try {
             $this->_pg__ave_skd = $this->_pg__ave_skd->query(file_get_contents(__DIR__ . '/../sql/pg/getBadIntenetOrders.sql'));
         } catch (PDOException  $e) {
             die("Ошибка: " . $e);
         }
-        $output->writeln(' <num>' . $this->_pg__ave_skd->rowCount() . ' стр.</num>');
+        $output->writeln(
+            $formatter->formatBlock(
+                $this->_pg__ave_skd->rowCount() . ' стр.','num'));
 
         // Заверщаем работу если документов нет
         if (!$this->_pg__ave_skd->rowCount()) {
-            $output->write('<green>Нет плохих интернет-заказов</green>');
+        $output->writeln(
+            $formatter->formatBlock(
+                'Нет плохих интернет-заказов','green'));
             exit(0);
         }
 
 
         // Приводим в нормальный вид выгрузку из 1С
 
-        $output->writeln($this->formatter->formatBlock('Приводим в нормальный вид выгрузку из 1С', 'info'));
+        $output->writeln('Приводим в нормальный вид выгрузку из 1С');
         $this->_pg__ave_skd->setFetchMode(\PDO::FETCH_ASSOC);
         $this->_pg__ave_skd = new \ArrayObject($this->_pg__ave_skd->fetchAll(), \ArrayObject::ARRAY_AS_PROPS | \ArrayObject::STD_PROP_LIST);
         $_pg__ave_skd__iterator = $this->_pg__ave_skd->getIterator();
@@ -111,7 +117,7 @@ class BadInternetOrder extends Command
 
 
         // Готовим запрос в базу репликации
-        $output->writeln('<info>Готовим запрос в базу репликации</info>');
+        $output->writeln('Готовим запрос в базу репликации');
         try {
             $sql = (new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../sql/pg/twig')), [
                 'cache' => realpath(__DIR__ . '/../cache/'),
@@ -125,13 +131,14 @@ class BadInternetOrder extends Command
                 ]
             );
         } catch (\Twig_Error_Syntax $e) {
+
             $output->writeln('<err>' . $e->getSourceContext()->getPath() . '</err>');
             $output->writeln('<info>Строка #' . $e->getTemplateLine() . ': ' . $e->getRawMessage() . '</info>');
         }
 
 
         // Пишем запрос к транспортной базе в файл и архивируем
-        $output->writeln('<info>Пишем запрос к транспортной базе в файл и архивируем</info>');
+        $output->write('Пишем запрос к транспортной базе в файл и архивируем: ');
         $zip_path = (new Class ($sql)
         {
             public const file_name = 'getTrasportErrors.sql';
@@ -164,14 +171,14 @@ class BadInternetOrder extends Command
 
 
         // Делаем запрос в базу репликации
-        $output->write('<info>Делаем запрос в базу репликации:</info>');
+        $output->write('Делаем запрос в базу репликации:');
         try {
             $this->_pg__repl = $this->_pg__repl->query($sql);
         } catch
-        (PDOException  $e) {
+        (\Exception $e) {
             die("Ошибка: " . $e);
         }
-        $output->writeln(' <num>' . $this->_pg__repl->rowCount() . ' стр.</num>');
+        $output->writeln($formatter->formatBlock($this->_pg__repl->rowCount(), 'num'));
 
 
         $this->_pg__repl->setFetchMode(\PDO::FETCH_ASSOC);
@@ -218,11 +225,14 @@ class BadInternetOrder extends Command
             $mail->msgHTML((new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../templates/'))))
                 ->render('mail_bad_internet_orders.twig', ['docs' => $_pg__repl__iterator]));
             if (!$mail->send()) {
-                $output->writeln('<err>Message could not be sent.' . PHP_EOL . 'Mailer Error: ' . $mail->ErrorInfo . '</err>');
+                $output->writeln(
+                    $formatter->formatBlock('Ошибка отправки: '.$mail->ErrorInfo,'err',true));
             } else {
-                $output->writeln('<green>Message has been sent</green>');
+                $output->writeln(
+                    $formatter->formatBlock('Message has been sent','green',true));
             }
         }
 
     }
 }
+$app->add(new BadInternetOrder('check-internet-orders'));
