@@ -13,6 +13,7 @@ setlocale(LC_ALL, 'ru_RU.UTF-8');
 
 
 require_once realpath(__DIR__ . '/myConsoleCommand.inc');
+require_once realpath(__DIR__ . '/myZIP.inc');
 
 
 

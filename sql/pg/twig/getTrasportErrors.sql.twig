@@ -50,3 +50,4 @@ FROM
       b.ndoc ) c
   ON a.id = c.mid
   WHERE a.ndoc IN ({{ndocs|join(',')}})
+    ORDER BY a.ndoc ASC

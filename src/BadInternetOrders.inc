@@ -29,11 +29,10 @@ class BadInternetOrder extends Command
         $this->setDescription('Проверка не отправленных на аптеку интернет-заказов');
         $this->setHelp('Здесь будет описание комманды' . PHP_EOL . PHP_EOL);
         $this->setDefinition(new InputDefinition([
-            new InputOption(
-                'email',
-                'e',
-                InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
-                'Адрес электронной почты для отправки результата')
+            new InputOption('email','e',InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Адрес электронной почты для отправки результата'),
+            new InputOption('only-work-time', 'w', InputOption::VALUE_NONE | InputOption::VALUE_OPTIONAL,
+                'Работать только в рабочее время с 9-18 с понедельника по пятницу'),
         ]));
     }
 
@@ -45,9 +44,13 @@ class BadInternetOrder extends Command
     {
         /** @var FormatterHelper $formatter */
         $formatter = &$this->formatter;
-
         parent::execute($input, $output);
-
+        if($input->getOption('only-work-time'))
+        if(\Carbon\Carbon::now()->isWeekday())
+        if(\Carbon\Carbon::now()->hour<9 || \Carbon\Carbon::now()->hour>18){
+            $output->writeln($formatter->formatBlock('Не работаем в нерабочее время','err',true));
+            die;
+        }
         $output->writeln('Готовим PDO');
         $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn, $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
         $this->_pg__repl = new \PDO($this->config->database->transport->dsn, $this->config->database->transport->username, $this->config->database->transport->password);
@@ -65,6 +68,8 @@ class BadInternetOrder extends Command
         // Режим выборки по умолчанию
         $this->_pg__ave_skd->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
         $this->_pg__repl->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
+
+
 
 
         // Запрос в 1С, выбираем плохие интенет-заказы
@@ -137,37 +142,10 @@ class BadInternetOrder extends Command
         }
 
 
-        // Пишем запрос к транспортной базе в файл и архивируем
-        $output->write('Пишем запрос к транспортной базе в файл и архивируем: ');
-        $zip_path = (new Class ($sql)
-        {
-            public const file_name = 'getTrasportErrors.sql';
-            public const file_path = __DIR__ . '/../tmp/' . self::file_name;
-            protected $zip_name = 'sql.[timestamp].zip';
-            public $zip_path;
-            private $zip;
-
-            public function __construct(?string $sql = null)
-            {
-
-                file_put_contents($this::file_path, $sql);
-                if (!file_exists($this::file_path))
-                    die('Скрипт запроса в транспортную базу не найден');
-
-                $this->zip_name = str_replace('[timestamp]', \Carbon\Carbon::now()->timestamp, $this->zip_name);
-                $this->zip_path = pathinfo($this::file_path, PATHINFO_DIRNAME) . '/' . $this->zip_name;
-
-                ob_start();
-                system('7za a ' . $this->zip_path . ' ' . $this::file_path . ' -p' . escapeshellarg(strtoupper(dechex(crc32($sql)))), $ret);
-                if (!$ret) {
-                    ob_end_clean();
-                    echo str_repeat(' ', 1) . $this::file_name . ' -> ' . $this->zip_name . PHP_EOL;
-                } else {
-                    ob_end_flush();
-                    die('Не могу создать архив скрипта' . PHP_EOL);
-                }
-            }
-        })->zip_path;
+        myZIP::$zPath = __DIR__ . '/../tmp/sql.'.\Carbon\Carbon::now()->timestamp.'.zip';
+        myZIP::$fPath = __DIR__ . '/../tmp/getInternetOrdersTrasportErrors.sql';
+        myZIP::$password = strtoupper(crc32($sql));
+        file_put_contents(myZIP::$fPath,$sql);myZIP::doZip();
 
 
         // Делаем запрос в базу репликации
@@ -219,8 +197,8 @@ class BadInternetOrder extends Command
 
             $mail->isHTML(true);
             $mail->Subject = 'Мониторинг интернет-заказов';
-            if (file_exists($zip_path)) $mail->addAttachment($zip_path);
-            $mail->addEmbeddedImage(__DIR__ . '/../img/filter.jpg', 'filter-img', 'filter.jpg');
+            if (file_exists(myZIP::$zPath)) $mail->addAttachment(myZIP::$zPath);
+            $mail->addEmbeddedImage(__DIR__ . '/../img/filter-internet-orders-img.jpg', 'filter-internet-orders-img', 'filter-internet-orders-img.jpg');
 
             $mail->msgHTML((new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../templates/'))))
                 ->render('mail_bad_internet_orders.twig', ['docs' => $_pg__repl__iterator]));
