@@ -20,3 +20,4 @@ require_once realpath(__DIR__ . '/myZIP.inc');
 $app = new Application('AVE WatchDog', '1.0.0');
 
 require_once realpath(__DIR__ . '/BadInternetOrders.inc');
+require_once realpath(__DIR__ . '/inSuppErrors.inc');
