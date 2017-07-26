@@ -12,6 +12,7 @@ WITH orders AS (
         ON public._reference22._idrref = public._document7084._Fld7261RRef
     WHERE public._document7084._fld7268rref != E'\\x80B17C208209698D4D847B33CBB4670B'
           -- ТипНакладной: Интернет-заказ (_enum2660)
+          AND public._document7084._marked = FALSE -- Не помеченные на удаление
           AND public._document7084._date_time < now() - '1 hours' :: INTERVAL
           -- Документы, созданные более часа назад
           AND public._document7084._date_time > now() - '720 hours' :: INTERVAL

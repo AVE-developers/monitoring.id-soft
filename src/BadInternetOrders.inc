@@ -2,12 +2,7 @@
 
 namespace AveWd;
 
-use AveWd\Console\Command\Command;
-use Symfony\Component\Console\Helper\FormatterHelper;
-use Symfony\Component\Console\Input\InputDefinition;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+use AveWd\Console\Command\Command;use Symfony\Component\Console\Helper\FormatterHelper;use Symfony\Component\Console\Input\InputDefinition;use Symfony\Component\Console\Input\InputInterface;use Symfony\Component\Console\Input\InputOption;use Symfony\Component\Console\Output\OutputInterface;
 
 class BadInternetOrder extends Command
 {
@@ -22,7 +17,14 @@ class BadInternetOrder extends Command
     {
         parent::__construct($name);
     }
-
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        parent::initialize($input,$output);
+    }
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        parent::interact($input,$output);
+    }
     protected function configure()
     {
         parent::configure();
@@ -205,6 +207,7 @@ class BadInternetOrder extends Command
             if (!$mail->send()) {
                 $output->writeln(
                     $formatter->formatBlock('Ошибка отправки: '.$mail->ErrorInfo,'err',true));
+                file_put_contents(__DIR__.'/../tmp/mail_bad_internet_orders.html',$mail->Body);
             } else {
                 $output->writeln(
                     $formatter->formatBlock('Message has been sent','green',true));

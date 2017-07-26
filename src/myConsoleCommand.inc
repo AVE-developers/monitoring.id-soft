@@ -24,17 +24,9 @@ class Command extends \Symfony\Component\Console\Command\Command
         $this->config = Yaml::parse(file_get_contents(realpath(__DIR__ . '/../etc/confg.yml')),Yaml::PARSE_OBJECT_FOR_MAP);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output)
     {
-        $output->getFormatter()->setStyle('info',
-            new \Symfony\Component\Console\Formatter\OutputFormatterStyle('yellow', null, ['bold', 'blink']));
-        $output->getFormatter()->setStyle('err',
-            new \Symfony\Component\Console\Formatter\OutputFormatterStyle('red', null, ['bold', 'blink']));
-        $output->getFormatter()->setStyle('num',
-            new \Symfony\Component\Console\Formatter\OutputFormatterStyle('green', null, ['bold', 'blink']));
-        $output->getFormatter()->setStyle('green',
-            $output->getFormatter()->getStyle('num'));
-
+        parent::interact($input,$output);
         // Проверка заполенния обязательных параметров комманды
         $arr_itr_Options = (new \ArrayObject($this->getDefinition()->getOptions()))->getIterator();
         while ($arr_itr_Options->valid()) {
@@ -51,5 +43,19 @@ class Command extends \Symfony\Component\Console\Command\Command
             }
             $arr_itr_Options->next();
         }
+    }
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $output->getFormatter()->setStyle('info',
+            new \Symfony\Component\Console\Formatter\OutputFormatterStyle('yellow', null, ['bold', 'blink']));
+        $output->getFormatter()->setStyle('err',
+            new \Symfony\Component\Console\Formatter\OutputFormatterStyle('red', null, ['bold', 'blink']));
+        $output->getFormatter()->setStyle('num',
+            new \Symfony\Component\Console\Formatter\OutputFormatterStyle('green', null, ['bold', 'blink']));
+        $output->getFormatter()->setStyle('green',
+            $output->getFormatter()->getStyle('num'));
+
+
+
     }
 }

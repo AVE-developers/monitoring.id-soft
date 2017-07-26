@@ -28,7 +28,14 @@ class inSuppErrors extends Command
                 'Работать только в рабочее время с 9-18 с понедельника по пятницу'),
                 ]));
     }
-
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        parent::initialize($input,$output);
+    }
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        parent::interact($input,$output);
+    }
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         /** @var FormatterHelper $formatter */
