@@ -2,7 +2,7 @@
 
 namespace AveWd;
 
-use AveWd\Console\Command\Command;use Symfony\Component\Console\Helper\FormatterHelper;use Symfony\Component\Console\Input\InputDefinition;use Symfony\Component\Console\Input\InputInterface;use Symfony\Component\Console\Input\InputOption;use Symfony\Component\Console\Output\OutputInterface;
+use AveWd\Console\Command\Command;use Symfony\Component\Console\Application;use Symfony\Component\Console\Helper\FormatterHelper;use Symfony\Component\Console\Input\InputDefinition;use Symfony\Component\Console\Input\InputInterface;use Symfony\Component\Console\Input\InputOption;use Symfony\Component\Console\Output\OutputInterface;
 
 class BadInternetOrder extends Command
 {
@@ -17,14 +17,6 @@ class BadInternetOrder extends Command
     {
         parent::__construct($name);
     }
-    protected function initialize(InputInterface $input, OutputInterface $output)
-    {
-        parent::initialize($input,$output);
-    }
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
-        parent::interact($input,$output);
-    }
     protected function configure()
     {
         parent::configure();
@@ -37,6 +29,20 @@ class BadInternetOrder extends Command
                 'Работать только в рабочее время с 9-18 с понедельника по пятницу'),
         ]));
     }
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        parent::initialize($input,$output);
+    }
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        parent::interact($input,$output);
+        if($input->getOption('only-work-time'))
+        if(\Carbon\Carbon::now()->isWeekday())
+        if(\Carbon\Carbon::now()->hour<9 || \Carbon\Carbon::now()->hour>18){
+            $output->writeln('Не работаем в нерабочее время');
+            die;
+        }
+    }
 
     /**
      * @param InputInterface $input
@@ -47,15 +53,11 @@ class BadInternetOrder extends Command
         /** @var FormatterHelper $formatter */
         $formatter = &$this->formatter;
         parent::execute($input, $output);
-        if($input->getOption('only-work-time'))
-        if(\Carbon\Carbon::now()->isWeekday())
-        if(\Carbon\Carbon::now()->hour<9 || \Carbon\Carbon::now()->hour>18){
-            $output->writeln($formatter->formatBlock('Не работаем в нерабочее время','err',true));
-            die;
-        }
+
         $output->writeln('Готовим PDO');
-        $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn, $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
-        $this->_pg__repl = new \PDO($this->config->database->transport->dsn, $this->config->database->transport->username, $this->config->database->transport->password);
+        $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn.' options=\'--client_encoding=UTF-8\'', $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
+        $this->_pg__repl = new \PDO($this->config->database->transport->dsn.' options=\'--client_encoding=WIN1251\'', $this->config->database->transport->username, $this->config->database->transport->password);
+
 
         $output->writeln('Настраиваем драйвер БД');
         // Генерировать исключение при ошибках
@@ -77,7 +79,8 @@ class BadInternetOrder extends Command
         // Запрос в 1С, выбираем плохие интенет-заказы
         $output->write('Запрос в 1С, выбираем плохие интенет-заказы:');
         try {
-            $this->_pg__ave_skd = $this->_pg__ave_skd->query(file_get_contents(__DIR__ . '/../sql/pg/getBadIntenetOrders.sql'));
+            $this->_pg__ave_skd = $this->_pg__ave_skd->query(
+                file_get_contents(__DIR__ . '/../sql/pg/getBadIntenetOrders.sql'));
         } catch (PDOException  $e) {
             die("Ошибка: " . $e);
         }
@@ -92,7 +95,6 @@ class BadInternetOrder extends Command
                 'Нет плохих интернет-заказов','green'));
             exit(0);
         }
-
 
         // Приводим в нормальный вид выгрузку из 1С
 
@@ -164,22 +166,24 @@ class BadInternetOrder extends Command
         $this->_pg__repl->setFetchMode(\PDO::FETCH_ASSOC);
         $this->_pg__repl = new \ArrayObject($this->_pg__repl->fetchAll(), \ArrayObject::ARRAY_AS_PROPS | \ArrayObject::STD_PROP_LIST);
         $_pg__repl__iterator = $this->_pg__repl->getIterator();
+        if (!$_pg__repl__iterator->count()) die('Нет ошибок репликации');
+
+
+
+        // Перебираем строки запроса - ошибки репликации
         while ($_pg__repl__iterator->valid()) {
-            $this->_pg__repl->{$_pg__repl__iterator->key()}['data'] = new \Carbon\Carbon($_pg__repl__iterator->current()['data']);
-
-
-            // Обработка описания событий
-            if ($this->_pg__repl->{$_pg__repl__iterator->key()}['msg'])
-                $this->_pg__repl->{$_pg__repl__iterator->key()}['msg'] =
-                    mb_convert_encoding($_pg__repl__iterator->current()['msg'], 'utf-8', 'Windows-1251');
-            elseif ($_pg__repl__iterator->current()['tname'] == 'out')
-                $this->_pg__repl->{$_pg__repl__iterator->key()}['msg'] =
-                    'пакет поставлен в очередь на доставку в аптеку, если аптека его долго не забирает, видимо там проблемы со связью';
-
+            $this->_pg__repl->{$_pg__repl__iterator->key()}['data'] =
+                new \Carbon\Carbon($_pg__repl__iterator->current()['data']);
+            $this->_pg__repl->{$_pg__repl__iterator->key()}['enqueue'] =
+                new \Carbon\Carbon($_pg__repl__iterator->current()['enqueue']);
 
             $_pg__repl__iterator->next();
         }
-        if (!$_pg__repl__iterator->count()) die(0);
+
+
+
+
+
 
         if ($input->getOption('email')) {
             $mail = new \PHPMailer;
@@ -216,4 +220,5 @@ class BadInternetOrder extends Command
 
     }
 }
+/** @var Application $app */
 $app->add(new BadInternetOrder('check-internet-orders'));

@@ -1,8 +1,8 @@
 {% set tables = [
-    {'tname':'archive',	'fldtime':'archive_dt',	'flderrormsg':'error_msg',	'CommentOperation':'РџРѕРёСЃРє РІ Р°СЂС…РёРІРµ'},
-    {'tname':'out',		'fldtime':'enqueue_dt',	'flderrormsg':'error_msg',	'CommentOperation':'РџРѕРёСЃРє РІ РѕС‡РµСЂРµРґРё'},
-    {'tname':'sent',	'fldtime':'dequeue_dt',	'flderrormsg':NULL,			'CommentOperation':'РџРѕРёСЃРє РІ РѕС‚РїСЂР°РІР»РµРЅРЅС‹С…'},
-    {'tname':'error',	'fldtime':'create_dt',	'flderrormsg':'error_msg',	'CommentOperation':'РџРѕРёСЃРє РІ РѕС€РёР±РєР°С…'}
+    {'tname':'archive',	'fldtime':'archive_dt',	'flderrormsg':'error_msg',	'CommentOperation':'Поиск в архиве'},
+    {'tname':'out',		'fldtime':'enqueue_dt',	'flderrormsg':'error_msg',	'CommentOperation':'Поиск в очереди'},
+    {'tname':'sent',	'fldtime':'dequeue_dt',	'flderrormsg':NULL,			'CommentOperation':'Поиск в отправленных'},
+    {'tname':'error',	'fldtime':'create_dt',	'flderrormsg':'error_msg',	'CommentOperation':'Поиск в ошибках'}
     ]
 %}
 {# set min_dt = {'year':2017,'month':7,'day':1} #}
@@ -16,7 +16,13 @@ WITH packets AS (
     {{table.tname}}.id_instance :: SMALLINT AS idapt,
     {{table.tname}}.id :: INTEGER AS id,
     {{table.tname}}.{{table.fldtime}} :: TIMESTAMPTZ AS create_dt,
-    {% if table.flderrormsg %}{{table.tname}}.{{table.flderrormsg}}{% else %}NULL{% endif %} :: TEXT AS error_msg
+    {{table.tname}}.enqueue_dt :: TIMESTAMPTZ AS enqueue_dt,
+    {% if table.tname == 'out' %}
+    'пакет поставлен в очередь на доставку в аптеку, если аптека его долго не забирает, видимо там проблемы со связью'
+    {% elseif table.tname == 'archive' %}
+    'документ обработан аптекой, но статус в 1С не проставлен, документ не дошел до 1С'
+    {% elseif table.flderrormsg %}{{table.tname}}.{{table.flderrormsg}}{% else %}NULL{% endif %}
+    :: TEXT AS error_msg
   FROM
     repl.b2f_{{table.tname}} {{table.tname}}
   WHERE
@@ -27,15 +33,14 @@ WITH packets AS (
 {% endfor %}
 )
 
--- РџРѕРёСЃРє С‚РѕР»СЊРєРѕ РїРѕСЃР»РµРґРЅРёС… РїР°РєРµС‚РѕРІ
+-- Поиск только последних пакетов
 SELECT
   a.ndoc      :: INTEGER     AS ndoc,
   a.idapt     :: SMALLINT    AS idapt,
   a.tname     :: VARCHAR(7)  AS tname,
   a.id        :: INTEGER     AS npack,
   a.create_dt :: TIMESTAMPTZ AS data,
-  a.create_dt :: DATE        AS data_d,
-  a.create_dt :: TIME        AS data_t,
+  a.enqueue_dt :: TIMESTAMPTZ AS enqueue,
   a.error_msg :: TEXT        AS msg
 FROM
   packets a
