@@ -1,12 +1,18 @@
 <?php
-
 namespace AveWd;
+
+\R::setup('sqlite::memory:');
+register_shutdown_function(function(){
+    \R::close();
+});
 
 use Symfony\Component\Console\Application;
 
 
 set_include_path(realpath(__DIR__ . '/../vendor/'));
+
 require_once 'autoload.php';
+
 
 setlocale(LC_ALL, 'ru_RU.UTF-8');
 \Carbon\Carbon::setLocale('ru');
@@ -19,3 +25,4 @@ $app = new Application('AVE WatchDog', '1.0.0');
 
 require_once realpath(__DIR__ . '/BadInternetOrders.inc');
 require_once realpath(__DIR__ . '/inSuppErrors.inc');
+

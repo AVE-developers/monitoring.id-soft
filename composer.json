@@ -1,0 +1,21 @@
+{
+    "name": "ave/wd",
+    "description": "Watchdog 1C:Warehouse database",
+    "type": "project",
+    "require": {
+        "nesbot/carbon": "^1.22",
+        "Symfony/Console": "^3.3",
+        "symfony/twig-bundle": "^3.3",
+        "phpmailer/phpmailer": "^5.2",
+        "league/oauth2-google": "^2.0",
+        "symfony/config": "^3.3",
+        "symfony/yaml": "^3.3"
+    },
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Anton Rastyazhenko",
+            "email": "rastyazhenko.a.v@366.ru"
+        }
+    ]
+}

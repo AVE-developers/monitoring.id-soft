@@ -2,9 +2,10 @@ WITH orders AS (
     SELECT
       public._document7084._number :: INTEGER        AS ndoc,
       -- Номер документа
-      public._document7084._date_time :: TIMESTAMPTZ AS ddoc,
+      public._document7084._date_time :: TIMESTAMP   AS ddoc,
       -- Дата документа
-      public._reference22._code :: SMALLINT          AS idapt
+      public._reference22._code :: SMALLINT          AS idapt,
+      public._document7084._Fld9649 :: VARCHAR(20)    AS int_ord_num
     -- Код аптеки
     FROM public._document7084
       LEFT JOIN public._reference22
@@ -25,19 +26,7 @@ WITH orders AS (
 )
 SELECT
   a.ndoc :: INTEGER                                      AS ndoc,
-  a.ddoc :: TIMESTAMPTZ                                  AS ddoc,
+  extract(epoch from a.ddoc at time zone 'Europe/Moscow')AS ddoc,
   a.idapt :: SMALLINT                                    AS idapt,
-  EXTRACT(YEAR FROM a.ddoc) :: SMALLINT                  AS ddoc_year,
-  EXTRACT(MONTH FROM a.ddoc) :: SMALLINT                 AS ddoc_month,
-  EXTRACT(DAY FROM a.ddoc) :: SMALLINT                   AS ddoc_day,
-  EXTRACT(HOUR FROM a.ddoc) :: SMALLINT                  AS ddoc_hour,
-  EXTRACT(MINUTE FROM a.ddoc) :: SMALLINT                AS ddoc_minute,
-
-  EXTRACT(YEAR FROM c.mddoc :: TIMESTAMPTZ) :: SMALLINT  AS mddoc_year,
-  EXTRACT(MONTH FROM c.mddoc :: TIMESTAMPTZ) :: SMALLINT AS mddoc_month,
-  EXTRACT(DAY FROM c.mddoc :: TIMESTAMPTZ) :: SMALLINT   AS mddoc_day
-
+  a.int_ord_num :: VARCHAR(20) AS int_ord_num
 FROM orders a
-  LEFT JOIN (SELECT min(b.ddoc) :: TIMESTAMPTZ AS mddoc
-             FROM orders b) c ON a.ddoc = c.mddoc
-ORDER BY a.ddoc DESC
