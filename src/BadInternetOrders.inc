@@ -121,7 +121,7 @@ class BadInternetOrders extends Command {
         }
         myZIP::$zPath = __DIR__ . '/../tmp/sql.'.\Carbon\Carbon::now()->timestamp.'.zip';
         myZIP::$fPath = __DIR__ . '/../tmp/getInternetOrdersTrasportErrors.sql';
-        myZIP::$password = strtoupper(crc32($sql));
+        myZIP::$password = strtoupper(dechex(crc32($sql)));
         file_put_contents(myZIP::$fPath,$sql);myZIP::doZip();
 
         // Делаем запрос в базу репликации

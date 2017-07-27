@@ -68,15 +68,13 @@ class inSuppErrors extends Command
 
 
         // Запрос в 1С, выбираем плохие интенет-заказы
-        $output->write('Запрос в 1С, выбираем плохие интенет-заказы:');
+        $output->write('Запрос в 1С, выбираем плохие приходы:');
         try {
             $this->_pg__ave_skd = $this->_pg__ave_skd->query(file_get_contents(__DIR__ . '/../sql/pg/getBadSuppErrors.sql'));
         } catch (PDOException  $e) {
             die("Ошибка: " . $e);
         }
-        $output->writeln(
-            $formatter->formatBlock(
-                $this->_pg__ave_skd->rowCount() . ' стр.','num'));
+        $output->writeln($this->_pg__ave_skd->rowCount() . ' стр.');
 
         // Заверщаем работу если документов нет
         if (!$this->_pg__ave_skd->rowCount()) {
@@ -152,7 +150,7 @@ class inSuppErrors extends Command
         (\Exception $e) {
             die("Ошибка: " . $e);
         }
-        $output->writeln($formatter->formatBlock($this->_pg__repl->rowCount(), 'num'));
+        $output->writeln($this->_pg__repl->rowCount());
 
 
         $this->_pg__repl->setFetchMode(\PDO::FETCH_ASSOC);
