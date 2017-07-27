@@ -106,7 +106,6 @@ class BadInternetOrders extends Command {
         $output->writeln('Готовим запрос в базу репликации');
         try {
             $sql = (new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../sql/pg/twig')), [
-                'cache' => realpath(__DIR__ . '/../cache/'),
                 'auto_reload' => true,
                 'optimizations' => (int)false,
             ]))->render('getTrasportErrors.sql.twig',
