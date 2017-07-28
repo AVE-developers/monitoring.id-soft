@@ -154,8 +154,9 @@ class inSuppErrors extends Command
             \R::store($prihod);
         });
         unset($this->_pg__repl);
-
-        $docs = \R::getAssoc('SELECT * FROM prihod a LEFT OUTER JOIN insupp b ON a.n_doc=b.ndoc ORDER BY b.idapt ASC, a.n_doc ASC ');
+        //$a = \R::getAll('SELECT * FROM prihod');
+        //$b = \R::getAll('SELECT * FROM insupp');
+        $docs = \R::getAll('SELECT * FROM prihod a LEFT OUTER JOIN insupp b ON a.n_doc=b.ndoc ORDER BY b.idapt ASC, a.n_doc ASC ');
         $html = (new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../templates/'))))
             ->render('mail_bad_normal_orders.twig', ['docs'   => $docs,
                                                        'Carbon' => [
