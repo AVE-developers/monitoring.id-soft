@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class newinSuppErrors extends Command
+class inSuppErrors extends Command
 {
 
     protected function configure()
@@ -188,4 +188,4 @@ class newinSuppErrors extends Command
 }
 
 /** @var Application $app */
-$app->add(new newinSuppErrors('new-check-normal-orders'));
+$app->add(new newinSuppErrors('check-normal-orders'));
