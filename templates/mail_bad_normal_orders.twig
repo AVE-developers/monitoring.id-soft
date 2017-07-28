@@ -76,7 +76,7 @@
                 {% if doc.n_postKD %} <hr style="height:0px;padding:0px;margin:2px;"> {{ doc.n_postKD|slice(0,12) }} <br> {% endif %}
                 {% if doc.nd_postKD %} <b style="font-size: x-small"> {{ doc.nd_postKD }} </b> {% endif %}
             </td>
-            <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.idapt }}</td>
+            <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_apt }}</td>
             <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
                 {% if doc.tname == 'out' %}
                     <span>В ОЧЕРЕДИ</span>
