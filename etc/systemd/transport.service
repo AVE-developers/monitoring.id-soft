@@ -1,0 +1,7 @@
+[Unit]
+Description=Мониторинг транспорта накладных
+ 
+[Service]
+WorkingDirectory=/home/anton/script/AveWd/
+ExecStart=/bin/sh transport.sh
+
