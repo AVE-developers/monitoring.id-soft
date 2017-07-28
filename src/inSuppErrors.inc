@@ -188,4 +188,4 @@ class inSuppErrors extends Command
 }
 
 /** @var Application $app */
-$app->add(new newinSuppErrors('check-normal-orders'));
+$app->add(new inSuppErrors('check-normal-orders'));
