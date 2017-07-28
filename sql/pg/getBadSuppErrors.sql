@@ -16,19 +16,19 @@ SELECT
 
 FROM public._document7084 prihod
 
-  LEFT OUTER JOIN public._reference22 apteki
+  LEFT JOIN public._reference22 apteki
   -- Справочник.МестаХранения
     ON apteki._idrref = prihod._Fld7261RRef
 
-  LEFT OUTER JOIN public._inforg9292 zepochkiKD
+  LEFT JOIN public._inforg9292 zepochkiKD
   -- цепочки по кросдокингу РегистрСведений.ЦепочкиПоКроссДокингу
     ON prihod._idrref = zepochkiKD._fld9293rref
 
-  LEFT OUTER JOIN public._reference33 postavshik
+  LEFT JOIN public._reference33 postavshik
   -- Поставщик Справочник.Поставщики
     ON prihod._fld7259rref = postavshik._idrref
 
-  LEFT OUTER JOIN public._reference33 postavshikKD
+  LEFT JOIN public._reference33 postavshikKD
   -- ПоставщикКД Справочник.Поставщики
     ON prihod._fld9648rref = postavshikKD._idrref
 

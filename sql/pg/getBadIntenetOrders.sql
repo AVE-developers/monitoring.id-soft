@@ -9,7 +9,7 @@ SELECT
 -- Номер интернет-заказа
 
 FROM public._document7084 prihod
-  LEFT OUTER JOIN public._reference22 apteki
+  LEFT JOIN public._reference22 apteki
   -- Справочник.МестаХранения
     ON prihod._Fld7261RRef = apteki._idrref
 
