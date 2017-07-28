@@ -88,7 +88,10 @@
                     <span>ОТПРАВЛЕН</span>
                 {% endif %}
             </td>
-            <td style="font-size: x-small">{{ doc.msg|convert_encoding('UTF-8','windows-1251') }}</td>
+            <td style="font-size: x-small">
+                {% if doc.npack==null %}Пакет не найден, видимо пакет был удален в ручную после попадания в ошибки{% endif %}
+                {{ doc.msg|convert_encoding('UTF-8','windows-1251') }}
+            </td>
             <td style="font-size: xx-small; text-align: center" nowrap="true">{{ doc.npack }}</td>
         </tr>
     {% endfor %}

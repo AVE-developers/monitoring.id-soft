@@ -20,7 +20,7 @@ WITH packets AS (
     {% elseif table.tname == 'archive' %}
     'пакет обработан аптекой, но статус документа в 1С не изменен, ситуация не стандартная'
     {% elseif table.tname == 'sent' %}
-    'пакет отправлен на аптеку, оптека должна вернуть ответ, если долго нет отета возможно проблемы связи'
+    'пакет отправлен на аптеку, аптека должна вернуть ответ, если долго нет отета возможно проблемы связи'
     {% elseif table.flderrormsg %}{{table.tname}}.{{table.flderrormsg}}{% else %}NULL{% endif %}
     :: TEXT AS error_msg
   FROM
