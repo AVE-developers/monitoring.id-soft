@@ -16,9 +16,11 @@ WITH packets AS (
     {{table.tname}}.{{table.fldtime}} :: TIMESTAMPTZ AS create_dt,
     {{table.tname}}.enqueue_dt :: TIMESTAMPTZ AS enqueue_dt,
     {% if table.tname == 'out' %}
-    'пакет поставлен в очередь на доставку в аптеку, если аптека его долго не забирает, видимо там проблемы со связью'
+    'пакет поставлен в очередь на доставку в аптеку, аптека должна его забрать, если не забирает возможно проблемы связи'
     {% elseif table.tname == 'archive' %}
-    'документ обработан аптекой, но статус в 1С не проставлен, документ не дошел до 1С'
+    'пакет обработан аптекой, но статус документа в 1С не изменен, ситуация не стандартная'
+    {% elseif table.tname == 'sent' %}
+    'пакет отправлен на аптеку, оптека должна вернуть ответ, если долго нет отета возможно проблемы связи'
     {% elseif table.flderrormsg %}{{table.tname}}.{{table.flderrormsg}}{% else %}NULL{% endif %}
     :: TEXT AS error_msg
   FROM
@@ -31,15 +33,14 @@ WITH packets AS (
 {% endfor %}
 )
 
--- Поиск только последних пакетов
 SELECT
   a.ndoc      :: INTEGER     AS ndoc,
   a.idapt     :: SMALLINT    AS idapt,
   a.tname     :: VARCHAR(7)  AS tname,
   a.id        :: INTEGER     AS npack,
 
-    extract(epoch from a.create_dt at time zone 'UTC') AS data,
-    extract(epoch from a.enqueue_dt at time zone 'UTC') AS enqueue,
+    extract(epoch from a.create_dt at time zone 'UTC') :: BIGINT AS data,
+    extract(epoch from a.enqueue_dt at time zone 'UTC') :: BIGINT AS enqueue,
 
   a.error_msg :: TEXT        AS msg
 FROM

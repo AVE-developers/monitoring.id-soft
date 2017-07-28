@@ -1,60 +1,135 @@
-<table style="border-collapse: collapse;table-layout: auto;" border="1" cellspacing="0" cellpadding="5" bgcolor="#f5f5f5">
+<meta charset="UTF-8">
+<table style="border-collapse: collapse;table-layout: auto;" border="1" cellspacing="0" cellpadding="5"
+       bgcolor="#f5f5f5">
     <thead>
     <tr style="font-size: xx-small;font-weight: bold;vertical-align: middle;text-align: center">
-        <th>дата</th>
-        <th>приход</th>
-        <th>аптека</th>
-        <th>статус</th>
-        <th>описание</th>
-        <th>пакет</th>
+        <th>ДАТА:1С</th>
+        <th>ДАТА:PG</th>
+        <th>ДАТА:Err</th>
+        <th>ПРИХОД</th>
+        <th>ПОСТАВШИК</th>
+        <th>АПТЕКА</th>
+        <th>СТАТУС</th>
+        <th>ОПИСАНИЕ</th>
+        <th>ПАКЕТ</th>
     </tr>
     </thead>
     <tbody>
-{% for doc in docs %}
-    <tr>
-        <td style="font-size: x-small" nowrap="true">{{ doc.data.toDateTimeString() }}<br><span style="font-weight: bolder"> {{ doc.data.diffForHumans() }}{% if doc.data.diffInHours()>24 %} ({{ doc.data.diffInHours() }}ч.){% endif %}</span></td>
-        <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.ndoc }}</td>
-        <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.idapt }}</td>
-        <td style="font-size: x-small; text-align: center" nowrap="true">
-            {% if doc.tname == 'out' %}
-                в очереди
-            {% elseif doc.tname == 'archive' %}
-                обработан
-            {% elseif doc.tname == 'error' %}
-                ошибка
-            {% elseif doc.tname == 'sent' %}
-                отправлен
-            {% endif %}
-        </td>
-        <td style="font-size: x-small" class="msg">{{ doc.msg }}</td>
-        <td style="font-size: x-small; text-align: center" nowrap="true">{{ doc.npack }}</td>
-    </tr>
-{% endfor %}
-</tbody>
+    {% for doc in docs %}
+        {% set d_doc = Carbon[0].timestamp(doc.d_doc) %}
+        {% set enqueue = Carbon[1].timestamp(doc.enqueue) %}
+        {% set data = Carbon[2].timestamp(doc.data) %}
+        <tr>
+            <td style="font-size: x-small;text-align:center" nowrap="true">
+                {{ d_doc.toFormattedDateString() }}<br>
+                <span style="font-weight: bolder">
+                        {{ d_doc.diffForHumans() }}<br>
+                    {% if d_doc.diffInHours()>24 %}
+                        ( {{ d_doc.diffInHours() }} час. )
+                    {% else %}
+                        ( {{ d_doc.toTimeString() }} )
+                    {% endif %}
+                    </span>
+            </td>
+
+            <td style="font-size: x-small;text-align:center" nowrap="true">
+                {{ doc.enqueue }}<br>
+                {% if doc.enqueue %}
+                    {% if d_doc.ne(enqueue) %}
+                        {{ enqueue.toFormattedDateString() }}<br>
+                        <span style="font-weight: bolder">
+                                {{ enqueue.diffForHumans() }}<br>
+                            {% if enqueue.diffInHours()>24 %}
+                                ( {{ enqueue.diffInHours() }} час. )
+                            {% else %}
+                                ( {{ enqueue.toTimeString() }} )
+                            {% endif %}
+                            </span>
+                    {% else %}
+                        <span style="font-size:medium"><b>←</b></span>
+                    {% endif %}
+                {% endif %}
+            </td>
+
+            <td style="font-size: x-small;text-align:center" nowrap="true">
+                {% if doc.data %}
+                    {% if enqueue.ne(data) %}
+                        {{ data.toFormattedDateString() }}<br>
+                        <span style="font-weight: bolder">
+                                {{ data.diffForHumans() }}<br>
+                            {% if data.diffInHours()>24 %}
+                                ( {{ data.diffInHours() }} час. )
+                            {% else %}
+                                ( {{ data.toTimeString() }} )
+                            {% endif %}
+                            </span>
+                    {% else %}
+                        <span style="font-size:medium"><b>←</b></span>
+                    {% endif %}
+                {% endif %}
+            </td>
+
+
+            <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_doc }}</td>
+            <td style="line-height:96%;font-size: xx-small; text-align: center;font-weight: normal;padding: 2px;" nowrap="true">
+                {% if doc.n_post %}             {{ doc.n_post|slice(0,12) }}    <br>    {% endif %}
+                {% if doc.nd_post %}            {{ doc.nd_post }}           {% endif %}
+                {% if doc.n_postKD %}   <hr style="height:0px;padding:0px;margin:2px;">    {{ doc.n_postKD|slice(0,12) }}  <br>    {% endif %}
+                {% if doc.nd_postKD %}          {{ doc.nd_postKD }}         {% endif %}
+            </td>
+            <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.idapt }}</td>
+            <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
+                {% if doc.tname == 'out' %}
+                    <span>В ОЧЕРЕДИ</span>
+                {% elseif doc.tname == 'archive' %}
+                    <span>ОБРАБОТАН</span>
+                {% elseif doc.tname == 'error' %}
+                    <span style="color:red;font-size:x-small">ОШИБКА</span>
+                {% elseif doc.tname == 'sent' %}
+                    <span>ОТПРАВЛЕН</span>
+                {% endif %}
+            </td>
+            <td style="font-size: x-small">{{ doc.msg|convert_encoding('UTF-8','windows-1251') }}</td>
+            <td style="font-size: xx-small; text-align: center" nowrap="true">{{ doc.npack }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
 </table>
 <br><br><br>
 <hr>
 <ul style="text-align: left; font-size: x-small;"><h2>Описание статусов документов:</h2>
-    <li><b>в очереди</b> - пакет поставлен в очередь на доставку в аптеку, если аптека его долго не забирает, значит там нет интернета</li>
-    <li><b>обработан</b> - документ обработан аптекой, но статус в 1С не проставлен</li>
+    <li><b>в очереди</b> - пакет поставлен в очередь на доставку в аптеку, если аптека его долго не забирает, значит там
+        нет интернета
+    </li>
+    <li><b>обработан</b> - документ обработан аптекой, но статус в 1С не проставлен, документ не дошел до 1С</li>
     <li><b>ошибка</b> - пакет не дойдет до аптеки, не может пройти проверки, содержит ошибки</li>
     <li><b>отравлен</b> - пакет отправлен на аптеку, но ответ не приходит, возможно проблема связи</li>
 </ul>
 <ul style="text-align: left; font-size: x-small;"><h2>Описание полей таблицы:</h2>
-    <li><b>дата</b> - дата наступления события, это не дата документа в 1С, именно событие в транспорте пакета на аптеку</li>
+    <li><b>дата:1C</b> - дата документа в 1С</li>
+    <li><b>дата:PG</b> - дата выгрузки документа на аптеку, момент содания записи в очереди исходящих сообщений</li>
+    <li><b>дата:Err</b> - дата наступления события, это не дата документа в 1С, именно событие в транспорте пакета на
+        аптеку
+    </li>
     <li><b>приход</b> - номер документа 1С склад, поступление товара (учет в закупке)</li>
     <li><b>аптека</b> - код аптеки в 1С склад, не номер аптеки, а именно код 1С</li>
     <li><b>статус</b> - состояние транспортировки пакета</li>
-    <li><b>описание</b> - поле содержит описание ошибки транспортной системы, а также коментарий к ошибке, составленный данным роботом</li>
+    <li><b>описание</b> - поле содержит описание ошибки транспортной системы, а также коментарий к ошибке, составленный
+        данным роботом
+    </li>
     <li><b>пакет</b> - номер пакета в транспортной базе</li>
 </ul>
 <ul><h2>Алгоритм работы монитора</h2>
     <li>Из 1С склад выбираются документы поступление товара (учет в закупке) с применением фильтра:<br>
-    тип накладной - <b>не интернет-заказ</b>, статус офиса - выгружен на аптеку,
-    статус аптеки - неопределено или пустое значение, возраст документа - более 1 часа и менее 720 часов (30 дней)</li>
-    <li>Далее в транспортной базе данных разыскивается последний пакет отправленный на аптеку при выгрузке документа из 1С склад</li>
+        не помеченные на удаление, тип накладной - <b>не интернет-заказ</b>, статус офиса - выгружен на аптеку,
+        статус аптеки - неопределено или пустое значение, возраст документа - более 1 часа и менее 720 часов (30 дней)
+    </li>
+    <li>Далее в транспортной базе данных разыскивается последний пакет отправленный на аптеку при выгрузке документа из
+        1С склад
+    </li>
     <li>Производиться анализ ошибки, составляется коментарий</li>
-    Следует помнить что алгоритм специально не учитывает иные условия такие как пометка удаления документа или аптеки, отключение обмена с аптекой в 1С и др.
+    Следует помнить что алгоритм специально не учитывает иные условия такие как пометка удаления документа или аптеки,
+    отключение обмена с аптекой в 1С и др.
 </ul>
 <h2>Для проверки документов по журналу 1С склад требуется настроить фильтр согласно изображению ниже</h2>
-<img alt="Изображение отсутствует" src="cid:filter-nointernet-orders-img">
+<img alt="Изображение отсутствует" src="cid:filter-normal-orders-img">
