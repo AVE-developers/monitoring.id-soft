@@ -100,7 +100,7 @@ class inSuppErrors extends Command
             $prihod->nd_post   = func_get_arg(3);
             $prihod->nd_post_kd = func_get_arg(4);
             $prihod->n_post    = func_get_arg(5);
-            $prihod->n_posk_kd  = func_get_arg(6);
+            $prihod->n_post_kd  = func_get_arg(6);
             \R::store($prihod);
         });
         unset($this->_pg__ave_skd);
