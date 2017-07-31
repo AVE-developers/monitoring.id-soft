@@ -3,8 +3,6 @@ Description=Мониторинг транспорта накладных
  
 [Service]
 WorkingDirectory=/home/anton/script/AveWd
-ExecStart=/usr/bin/env /bin/sh ./transport.sh
-StandardOutput=journal+console
-StandardError=journal+console
+ExecStart=/bin/sh transport.sh
 
 

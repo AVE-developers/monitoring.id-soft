@@ -18,12 +18,6 @@ class inSuppErrors extends Command
         parent::configure();
         $this->setDescription('Проверка не отправленных на аптеку приходов ( кроме интернет-заказов )');
         $this->setHelp('Здесь будет описание комманды' . PHP_EOL . PHP_EOL);
-        $this->setDefinition(new InputDefinition([
-            new InputOption('email', 'e', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
-                'Адрес электронной почты для отправки результата'),
-            new InputOption('only-work-time', 'w', InputOption::VALUE_NONE,
-                'Работать только в рабочее время с 9-18 с понедельника по пятницу'),
-        ]));
     }
 
     protected function interact(InputInterface $input, OutputInterface $output)

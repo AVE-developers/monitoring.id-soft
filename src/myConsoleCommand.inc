@@ -3,7 +3,9 @@
 namespace AveWd\Console\Command;
 
 use Carbon\Carbon;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -14,14 +16,18 @@ class Command extends \Symfony\Component\Console\Command\Command
     public function __construct($name = null)
     {
         parent::__construct($name);
-        echo __CLASS__.' | '.__FUNCTION__.PHP_EOL;
     }
 
     protected function configure()
     {
         parent::configure();
-        echo __CLASS__.' | '.__FUNCTION__.PHP_EOL;
         $this->config = Yaml::parse(file_get_contents(realpath(__DIR__ . '/../etc/confg.yml')),Yaml::PARSE_OBJECT_FOR_MAP);
+        $this->setDefinition(new InputDefinition([
+            new InputOption('email', 'e', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
+                'Адрес электронной почты для отправки результата'),
+            new InputOption('only-work-time', 'w', InputOption::VALUE_NONE,
+                'Работать только в рабочее время с 9-18 с понедельника по пятницу'),
+        ]));
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output)
