@@ -44,8 +44,6 @@
                                 ( {{ enqueue.toTimeString() }} )
                             {% endif %}
                             </span>
-                    {% else %}
-                        <span style="font-size:medium"><b>←</b></span>
                     {% endif %}
                 {% endif %}
             </td>
@@ -62,19 +60,17 @@
                                 ( {{ data.toTimeString() }} )
                             {% endif %}
                             </span>
-                    {% else %}
-                        <span style="font-size:medium"><b>←</b></span>
                     {% endif %}
                 {% endif %}
             </td>
 
 
             <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_doc }}</td>
-            <td style="line-height:96%;font-size: xx-small; text-align: center;font-weight: normal;padding: 2px;" nowrap="true">
+            <td style="padding:0px;margin:0px;line-height:93%;font-size: xx-small;text-align:center;font-weight:normal;white-space:nowrap" nowrap="true">
                 {% if doc.n_post %} {{ doc.n_post|slice(0,12) }}{% endif %}
-                {% if doc.nd_post %} <br><b style="font-size: x-small"> {{ doc.nd_post }} </b> {% endif %}
+                {% if doc.nd_post %} <br><span style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post }} </span> {% endif %}
                 {% if doc.n_post_kd %} <br>{{ doc.n_post_kd|slice(0,12) }} {% endif %}
-                {% if doc.nd_post_kd %} <br><b style="font-size: x-small"> {{ doc.nd_post_kd }} </b> {% endif %}
+                {% if doc.nd_post_kd %} <br><span style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post_kd }} </span> {% endif %}
             </td>
             <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_apt }}</td>
             <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
