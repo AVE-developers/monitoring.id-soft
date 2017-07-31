@@ -26,61 +26,16 @@ class BadInternetOrders extends Command
         ]));
     }
 
-    /**
-     * Проверка опций, первичные настройки
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         parent::interact($input, $output);
-        static $PDOtryToConnect = 5;
-        try {
-            $output->writeln('Готовим PDO');
-            $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn . ' connect_timeout=3 options=\'--client_encoding=UTF-8\'',
-                $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
-            $this->_pg__repl    = new \PDO($this->config->database->transport->dsn . ' connect_timeout=3 options=\'--client_encoding=WIN1251\'',
-                $this->config->database->transport->username, $this->config->database->transport->password);
-            $output->writeln('Настраиваем драйвер БД');
-            // Генерировать исключение при ошибках
-            $this->_pg__ave_skd->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $this->_pg__repl->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            // Преобразовать пустые строки в NULL
-            $this->_pg__ave_skd->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_EMPTY_STRING);
-            $this->_pg__repl->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_EMPTY_STRING);
-            // Преобразовывать числовые значения в строки во время выборки. Значение типа bool.
-            $this->_pg__ave_skd->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
-            $this->_pg__repl->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
-            // Режим выборки по умолчанию
-            $this->_pg__ave_skd->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
-            $this->_pg__repl->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
-        } catch (\PDOException $PDOException) {
-            if (--$PDOtryToConnect) $this->interact($input, $output);
-            else die($PDOException);
-        }
     }
 
-    /**
-     * Инициализацция драйвера PDO
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
         parent::initialize($input, $output);
-        if ($input->getOption('only-work-time'))
-            if (!Carbon::now()->isWeekday())
-                if (Carbon::now()->hour < 9 || Carbon::now()->hour > 18) {
-                    die('Не работаем в нерабочее время' . str_repeat(PHP_EOL, 2));
-                }
-        if ($input->getOption('verbose')) \R::fancyDebug(true);
     }
 
-    /**
-     * Основной код команды
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
