@@ -34,22 +34,6 @@ class inSuppErrors extends Command
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         parent::interact($input, $output);
-        if ($input->getOption('only-work-time'))
-            if (\Carbon\Carbon::now()->isWeekday())
-                if (\Carbon\Carbon::now()->hour < 9 || \Carbon\Carbon::now()->hour > 18) {
-                    die('Не работаем в нерабочее время' . str_repeat(PHP_EOL, 2));
-                }
-        if ($input->getOption('verbose')) \R::fancyDebug(true);
-    }
-
-    /**
-     * Инициализацция драйвера PDO
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     */
-    protected function initialize(InputInterface $input, OutputInterface $output)
-    {
-        parent::initialize($input, $output);
         $output->writeln('Готовим PDO');
         $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn . ' connect_timeout=3 options=\'--client_encoding=UTF-8\'',
             $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
@@ -68,6 +52,22 @@ class inSuppErrors extends Command
         // Режим выборки по умолчанию
         $this->_pg__ave_skd->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
         $this->_pg__repl->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
+    }
+
+    /**
+     * Инициализацция драйвера PDO
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        parent::initialize($input, $output);
+        if ($input->getOption('only-work-time'))
+            if (!Carbon::now()->isWeekday())
+                if (Carbon::now()->hour < 9 || Carbon::now()->hour > 18) {
+                    die('Не работаем в нерабочее время' . str_repeat(PHP_EOL, 2));
+                }
+        if ($input->getOption('verbose')) \R::fancyDebug(true);
     }
 
     /**
@@ -98,9 +98,9 @@ class inSuppErrors extends Command
             $prihod->d_doc     = func_get_arg(1);
             $prihod->n_apt     = func_get_arg(2);
             $prihod->nd_post   = func_get_arg(3);
-            $prihod->nd_postKD = func_get_arg(4);
+            $prihod->nd_post_kd = func_get_arg(4);
             $prihod->n_post    = func_get_arg(5);
-            $prihod->n_poskKD  = func_get_arg(6);
+            $prihod->n_posk_kd  = func_get_arg(6);
             \R::store($prihod);
         });
         unset($this->_pg__ave_skd);
@@ -159,10 +159,10 @@ class inSuppErrors extends Command
         $docs = \R::getAll('SELECT * FROM prihod a LEFT OUTER JOIN insupp b ON a.n_doc=b.ndoc ORDER BY a.n_apt ASC, a.n_doc ASC ');
         $html = (new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../templates/'))))
             ->render('mail_bad_normal_orders.twig', ['docs'   => $docs,
-                                                       'Carbon' => [
-                                                           Carbon::now('Europe/Moscow'),
-                                                           Carbon::now('Europe/Moscow'),
-                                                           Carbon::now('Europe/Moscow')]]);
+                                                     'Carbon' => [
+                                                         Carbon::now('Europe/Moscow'),
+                                                         Carbon::now('Europe/Moscow'),
+                                                         Carbon::now('Europe/Moscow')]]);
         unset($docs);
 
         if ($input->getOption('email')) {

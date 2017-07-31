@@ -21,7 +21,7 @@ class BadInternetOrders extends Command
         $this->setDefinition(new InputDefinition([
             new InputOption('email', 'e', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED,
                 'Адрес электронной почты для отправки результата'),
-            new InputOption('only-work-time', 'w', InputOption::VALUE_NONE | InputOption::VALUE_OPTIONAL,
+            new InputOption('only-work-time', 'w', InputOption::VALUE_NONE,
                 'Работать только в рабочее время с 9-18 с понедельника по пятницу'),
         ]));
     }
@@ -34,26 +34,10 @@ class BadInternetOrders extends Command
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         parent::interact($input, $output);
-        if ($input->getOption('only-work-time'))
-            if (\Carbon\Carbon::now()->isWeekday())
-                if (\Carbon\Carbon::now()->hour < 9 || \Carbon\Carbon::now()->hour > 18) {
-                    die('Не работаем в нерабочее время' . str_repeat(PHP_EOL, 2));
-                }
-        if ($input->getOption('verbose')) \R::fancyDebug(true);
-    }
-
-    /**
-     * Инициализацция драйвера PDO
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param \Symfony\Component\Console\Output\OutputInterface $output
-     */
-    protected function initialize(InputInterface $input, OutputInterface $output)
-    {
-        parent::initialize($input, $output);
         $output->writeln('Готовим PDO');
         $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn . ' connect_timeout=3 options=\'--client_encoding=UTF-8\'',
             $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
-        $this->_pg__repl = new \PDO($this->config->database->transport->dsn . ' connect_timeout=3 options=\'--client_encoding=WIN1251\'',
+        $this->_pg__repl    = new \PDO($this->config->database->transport->dsn . ' connect_timeout=3 options=\'--client_encoding=WIN1251\'',
             $this->config->database->transport->username, $this->config->database->transport->password);
         $output->writeln('Настраиваем драйвер БД');
         // Генерировать исключение при ошибках
@@ -68,6 +52,22 @@ class BadInternetOrders extends Command
         // Режим выборки по умолчанию
         $this->_pg__ave_skd->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
         $this->_pg__repl->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
+    }
+
+    /**
+     * Инициализацция драйвера PDO
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        parent::initialize($input, $output);
+        if ($input->getOption('only-work-time'))
+            if (!Carbon::now()->isWeekday())
+                if (Carbon::now()->hour < 9 || Carbon::now()->hour > 18) {
+                    die('Не работаем в нерабочее время' . str_repeat(PHP_EOL, 2));
+                }
+        if ($input->getOption('verbose')) \R::fancyDebug(true);
     }
 
     /**
@@ -93,10 +93,10 @@ class BadInternetOrders extends Command
         $output->writeln($this->_pg__ave_skd->rowCount() . ' стр.');
 
         $this->_pg__ave_skd->fetchAll(\PDO::FETCH_FUNC, function () {
-            $prihod = \R::dispense('prihod');
-            $prihod->n_doc = func_get_arg(0);
-            $prihod->d_doc = func_get_arg(1);
-            $prihod->n_apt = func_get_arg(2);
+            $prihod           = \R::dispense('prihod');
+            $prihod->n_doc    = func_get_arg(0);
+            $prihod->d_doc    = func_get_arg(1);
+            $prihod->n_apt    = func_get_arg(2);
             $prihod->n_intzak = func_get_arg(3);
             \R::store($prihod);
         });
@@ -108,12 +108,12 @@ class BadInternetOrders extends Command
         $output->writeln('Готовим запрос в базу репликации');
         try {
             $sql = (new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../sql/pg/twig')), [
-                'auto_reload' => true,
+                'auto_reload'   => true,
                 'optimizations' => (int)false,
             ]))->render('getTrasportErrors.sql.twig',
                 [
-                    'ndocs' => \R::getCol('SELECT DISTINCT n_doc FROM prihod ORDER BY n_doc'),
-                    'mddoc' => $mddoc,
+                    'ndocs'  => \R::getCol('SELECT DISTINCT n_doc FROM prihod ORDER BY n_doc'),
+                    'mddoc'  => $mddoc,
                     'idapts' => \R::getCol('SELECT DISTINCT n_apt FROM prihod ORDER BY n_apt'),
                 ]
             );
@@ -121,8 +121,8 @@ class BadInternetOrders extends Command
             $output->writeln('<err>' . $e->getSourceContext()->getPath() . '</err>');
             $output->writeln('<info>Строка #' . $e->getTemplateLine() . ': ' . $e->getRawMessage() . '</info>');
         }
-        myZIP::$zPath = __DIR__ . '/../tmp/sql.' . Carbon::now()->timestamp . '.zip';
-        myZIP::$fPath = __DIR__ . '/../tmp/getInternetOrdersTrasportErrors.sql';
+        myZIP::$zPath    = __DIR__ . '/../tmp/sql.' . Carbon::now()->timestamp . '.zip';
+        myZIP::$fPath    = __DIR__ . '/../tmp/getInternetOrdersTrasportErrors.sql';
         myZIP::$password = strtoupper(dechex(crc32($sql)));
         file_put_contents(myZIP::$fPath, $sql);
         myZIP::doZip();
@@ -140,14 +140,14 @@ class BadInternetOrders extends Command
         $output->writeln($this->_pg__repl->rowCount() . ' стр.');
 
         $this->_pg__repl->fetchAll(\PDO::FETCH_FUNC, function () {
-            $prihod = \R::dispense('insupp');
-            $prihod->ndoc = func_get_arg(0);
-            $prihod->idapt = func_get_arg(1);
-            $prihod->tname = func_get_arg(2);
-            $prihod->npack = func_get_arg(3);
-            $prihod->data = func_get_arg(4);
+            $prihod          = \R::dispense('insupp');
+            $prihod->ndoc    = func_get_arg(0);
+            $prihod->idapt   = func_get_arg(1);
+            $prihod->tname   = func_get_arg(2);
+            $prihod->npack   = func_get_arg(3);
+            $prihod->data    = func_get_arg(4);
             $prihod->enqueue = func_get_arg(5);
-            $prihod->msg = func_get_arg(6);
+            $prihod->msg     = func_get_arg(6);
             \R::store($prihod);
         });
         unset($this->_pg__repl);
@@ -155,11 +155,11 @@ class BadInternetOrders extends Command
         //$b = \R::getAll('SELECT * FROM insupp');
         $docs = \R::getAll('SELECT * FROM prihod a LEFT OUTER JOIN insupp b ON a.n_doc=b.ndoc ORDER BY a.n_apt ASC, a.n_doc ASC ');
         $html = (new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../templates/'))))
-            ->render('mail_bad_internet_orders.twig', ['docs' => $docs,
-                'Carbon' => [
-                    Carbon::now('Europe/Moscow'),
-                    Carbon::now('Europe/Moscow'),
-                    Carbon::now('Europe/Moscow')]]);
+            ->render('mail_bad_internet_orders.twig', ['docs'   => $docs,
+                                                       'Carbon' => [
+                                                           Carbon::now('Europe/Moscow'),
+                                                           Carbon::now('Europe/Moscow'),
+                                                           Carbon::now('Europe/Moscow')]]);
         unset($docs);
 
         if ($input->getOption('email')) {
