@@ -34,24 +34,30 @@ class BadInternetOrders extends Command
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         parent::interact($input, $output);
-        $output->writeln('Готовим PDO');
-        $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn . ' connect_timeout=3 options=\'--client_encoding=UTF-8\'',
-            $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
-        $this->_pg__repl    = new \PDO($this->config->database->transport->dsn . ' connect_timeout=3 options=\'--client_encoding=WIN1251\'',
-            $this->config->database->transport->username, $this->config->database->transport->password);
-        $output->writeln('Настраиваем драйвер БД');
-        // Генерировать исключение при ошибках
-        $this->_pg__ave_skd->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        $this->_pg__repl->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        // Преобразовать пустые строки в NULL
-        $this->_pg__ave_skd->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_EMPTY_STRING);
-        $this->_pg__repl->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_EMPTY_STRING);
-        // Преобразовывать числовые значения в строки во время выборки. Значение типа bool.
-        $this->_pg__ave_skd->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
-        $this->_pg__repl->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
-        // Режим выборки по умолчанию
-        $this->_pg__ave_skd->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
-        $this->_pg__repl->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
+        static $PDOtryToConnect = 5;
+        try {
+            $output->writeln('Готовим PDO');
+            $this->_pg__ave_skd = new \PDO($this->config->database->ave_skd->dsn . ' connect_timeout=3 options=\'--client_encoding=UTF-8\'',
+                $this->config->database->ave_skd->username, $this->config->database->ave_skd->password);
+            $this->_pg__repl    = new \PDO($this->config->database->transport->dsn . ' connect_timeout=3 options=\'--client_encoding=WIN1251\'',
+                $this->config->database->transport->username, $this->config->database->transport->password);
+            $output->writeln('Настраиваем драйвер БД');
+            // Генерировать исключение при ошибках
+            $this->_pg__ave_skd->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $this->_pg__repl->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            // Преобразовать пустые строки в NULL
+            $this->_pg__ave_skd->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_EMPTY_STRING);
+            $this->_pg__repl->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_EMPTY_STRING);
+            // Преобразовывать числовые значения в строки во время выборки. Значение типа bool.
+            $this->_pg__ave_skd->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
+            $this->_pg__repl->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
+            // Режим выборки по умолчанию
+            $this->_pg__ave_skd->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
+            $this->_pg__repl->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_NAMED);
+        } catch (\PDOException $PDOException) {
+            if (--$PDOtryToConnect) $this->interact($input, $output);
+            else die($PDOException);
+        }
     }
 
     /**

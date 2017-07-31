@@ -71,10 +71,10 @@
 
             <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_doc }}</td>
             <td style="line-height:96%;font-size: xx-small; text-align: center;font-weight: normal;padding: 2px;" nowrap="true">
-                {% if doc.n_post %} {{ doc.n_post|slice(0,12) }} <br> {% endif %}
-                {% if doc.nd_post %} <b style="font-size: x-small"> {{ doc.nd_post }} </b> {% endif %}
-                {% if doc.n_post_kd %} <hr style="height:0px;padding:0px;margin:2px;"> {{ doc.n_post_kd|slice(0,12) }} <br> {% endif %}
-                {% if doc.nd_post_kd %} <b style="font-size: x-small"> {{ doc.nd_post_kd }} </b> {% endif %}
+                {% if doc.n_post %} {{ doc.n_post|slice(0,12) }}{% endif %}
+                {% if doc.nd_post %} <br><b style="font-size: x-small"> {{ doc.nd_post }} </b> {% endif %}
+                {% if doc.n_post_kd %} <br>{{ doc.n_post_kd|slice(0,12) }} {% endif %}
+                {% if doc.nd_post_kd %} <br><b style="font-size: x-small"> {{ doc.nd_post_kd }} </b> {% endif %}
             </td>
             <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_apt }}</td>
             <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
