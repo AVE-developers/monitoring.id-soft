@@ -48,8 +48,7 @@ class Command extends \Symfony\Component\Console\Command\Command
         }
 
         if ($input->getOption('only-work-time'))
-            if (!Carbon::now()->isWeekday())
-                if (Carbon::now()->hour < 9 || Carbon::now()->hour > 18) {
+            if (!Carbon::now()->isWeekday() || (Carbon::now()->hour < 9 || Carbon::now()->hour > 18)) {
                     die('Не работаем в нерабочее время' . str_repeat(PHP_EOL, 2));
                 }
         if ($input->getOption('verbose')) \R::fancyDebug(true);

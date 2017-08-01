@@ -66,13 +66,16 @@
 
 
             <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_doc }}</td>
-            <td style="padding:0px;margin:0px;line-height:93%;font-size: xx-small;text-align:center;font-weight:normal;white-space:nowrap" nowrap="true">
+            <td style="padding:0px;margin:0px;line-height:93%;font-size: xx-small;text-align:center;font-weight:normal;white-space:nowrap"
+                nowrap="true">
                 {% if doc.n_post %} {{ doc.n_post|slice(0,12) }}{% endif %}
-                {% if doc.nd_post %} <br><span style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post }} </span> {% endif %}
+                {% if doc.nd_post %} <br><span
+                        style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post }} </span> {% endif %}
                 {% if doc.n_post_kd %} <br>{{ doc.n_post_kd|slice(0,12) }} {% endif %}
-                {% if doc.nd_post_kd %} <br><span style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post_kd }} </span> {% endif %}
+                {% if doc.nd_post_kd %} <br><span
+                        style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post_kd }} </span> {% endif %}
             </td>
-            <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_apt }}</td>
+            <td style="font-size: small; text-align: center;font-weight:bold;{%if doc.inactive%}color:red;{%endif%}" nowrap="true">{{ doc.n_apt }}</td>
             <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
                 {% if doc.tname == 'out' %}
                     <span>В ОЧЕРЕДИ</span>
