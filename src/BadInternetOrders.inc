@@ -103,6 +103,9 @@ class BadInternetOrders extends Command
             $prihod->data    = func_get_arg(4);
             $prihod->enqueue = func_get_arg(5);
             $prihod->msg     = func_get_arg(6);
+            $prihod->inactive = func_get_arg(7);
+            $prihod->active   = func_get_arg(8);
+            $prihod->closed   = func_get_arg(9);
             \R::store($prihod);
         });
         unset($this->_pg__repl);

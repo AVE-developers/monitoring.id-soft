@@ -48,13 +48,13 @@ class inSuppErrors extends Command
         $output->writeln($this->_pg__ave_skd->rowCount() . ' стр.');
 
         $this->_pg__ave_skd->fetchAll(\PDO::FETCH_FUNC, function () {
-            $prihod            = \R::dispense('prihod');
-            $prihod->n_doc     = func_get_arg(0);
-            $prihod->d_doc     = func_get_arg(1);
-            $prihod->n_apt     = func_get_arg(2);
-            $prihod->nd_post   = func_get_arg(3);
+            $prihod             = \R::dispense('prihod');
+            $prihod->n_doc      = func_get_arg(0);
+            $prihod->d_doc      = func_get_arg(1);
+            $prihod->n_apt      = func_get_arg(2);
+            $prihod->nd_post    = func_get_arg(3);
             $prihod->nd_post_kd = func_get_arg(4);
-            $prihod->n_post    = func_get_arg(5);
+            $prihod->n_post     = func_get_arg(5);
             $prihod->n_post_kd  = func_get_arg(6);
             \R::store($prihod);
         });
@@ -98,15 +98,17 @@ class inSuppErrors extends Command
         $output->writeln($this->_pg__repl->rowCount() . ' стр.');
 
         $this->_pg__repl->fetchAll(\PDO::FETCH_FUNC, function () {
-            $prihod          = \R::dispense('insupp');
-            $prihod->ndoc    = func_get_arg(0);
-            $prihod->idapt   = func_get_arg(1);
-            $prihod->tname   = func_get_arg(2);
-            $prihod->npack   = func_get_arg(3);
-            $prihod->data    = func_get_arg(4);
-            $prihod->enqueue = func_get_arg(5);
-            $prihod->msg     = func_get_arg(6);
-            $prihod->inactive  = func_get_arg(7);
+            $prihod           = \R::dispense('insupp');
+            $prihod->ndoc     = func_get_arg(0);
+            $prihod->idapt    = func_get_arg(1);
+            $prihod->tname    = func_get_arg(2);
+            $prihod->npack    = func_get_arg(3);
+            $prihod->data     = func_get_arg(4);
+            $prihod->enqueue  = func_get_arg(5);
+            $prihod->msg      = func_get_arg(6);
+            $prihod->inactive = func_get_arg(7);
+            $prihod->active   = func_get_arg(8);
+            $prihod->closed   = func_get_arg(9);
             \R::store($prihod);
         });
         unset($this->_pg__repl);

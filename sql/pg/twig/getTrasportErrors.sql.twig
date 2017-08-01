@@ -42,14 +42,16 @@ SELECT
     extract(epoch from packets.create_dt at time zone 'UTC') :: BIGINT  AS data,
     extract(epoch from packets.enqueue_dt at time zone 'UTC') :: BIGINT AS enqueue,
 
-    packets.error_msg :: TEXT                                                 AS msg,
-    inactive.inactive_min :: SMALLINT                                   AS inactive
+    packets.error_msg :: TEXT                                           AS msg,
+    inactive.inactive_min :: SMALLINT                                   AS inactive,
+    list.is_active :: BOOLEAN                                           AS active,
+    list.is_closed :: BOOLEAN                                           AS closed
 FROM
     packets
 
     INNER JOIN (
                    SELECT
-                       ndoc      as ndoc,
+                       ndoc            as ndoc,
                        MAX(packets.id) as mid
                    FROM
                        packets
@@ -61,5 +63,9 @@ FROM
     LEFT OUTER JOIN repl.fo_inactive_stat inactive
         ON packets.idapt = inactive.id_instance
 
+    LEFT OUTER JOIN repl.fo_list list
+        ON packets.idapt = list.id_instance
+
 WHERE packets.ndoc IN ({{ndocs|join(',')}})
+      AND packets.create_dt < now() - '10 min' :: INTERVAL
 ORDER BY packets.ndoc ASC

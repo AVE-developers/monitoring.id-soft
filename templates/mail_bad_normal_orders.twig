@@ -75,7 +75,12 @@
                 {% if doc.nd_post_kd %} <br><span
                         style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post_kd }} </span> {% endif %}
             </td>
-            <td style="font-size: small; text-align: center;font-weight:bold;{%if doc.inactive%}color:red;{%endif%}" nowrap="true">{{ doc.n_apt }}</td>
+            <td style="font-size: small; text-align: center;font-weight:bold;
+            {%if doc.inactive%}color:darkred;
+            {%elseif not doc.active%}color:darkorange;
+            {%elseif doc.closed%}color:darkgrey;
+            {% else %}color:darkgreen;
+            {% endif %}                    " nowrap="true">{{ doc.n_apt }}</td>
             <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
                 {% if doc.tname == 'out' %}
                     <span>В ОЧЕРЕДИ</span>
@@ -114,7 +119,12 @@
     </li>
     <li><b>приход</b> - номер документа 1С склад, поступление товара (учет в закупке)</li>
     <li><b>поставщик</b> - номер документа поставщика, приходная накладная</li>
-    <li><b>аптека</b> - код аптеки в 1С склад, не номер аптеки, а именно код 1С, если номер красный - на аптеке проблемы связи</li>
+    <li><b>аптека</b> - код аптеки в 1С склад, не номер аптеки, а именно код 1С,
+        если номер <span style="color: darkgreen;font-weight: bold;font-variant:all-small-caps;">зеленый</span> - аптека активирована, не закрыта, нет проблем связи;
+        если номер <span style="color: darkred;font-weight: bold;font-variant:all-small-caps;">красный</span> - на аптеке проблемы связи;
+        если номер <span style="color: darkgrey;font-weight: bold;font-variant:all-small-caps;">серый</span> - аптека помечена как закрытая;
+        если номер <span style="color: darkorange;font-weight: bold;font-variant:all-small-caps;">оранжевый</span> - аптека помечена как неактивна.
+    </li>
     <li><b>статус</b> - состояние транспортировки пакета</li>
     <li><b>описание</b> - поле содержит описание ошибки транспортной системы, а также коментарий к ошибке, составленный
         данным роботом
