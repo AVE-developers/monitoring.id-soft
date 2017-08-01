@@ -2,6 +2,7 @@
 Description=Мониторинг транспорта накладных
  
 [Service]
+Type=OneShot
 WorkingDirectory=/home/anton/script/AveWd
 ExecStart=/bin/sh transport.sh
 

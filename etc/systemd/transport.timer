@@ -4,6 +4,7 @@ Description=Мониторинг транспорта накладных
 [Timer]
 OnBootSec=1min
 OnUnitActiveSec=3hours
+Unit=transport.service
 
 [Install]
 WantedBy=timers.target

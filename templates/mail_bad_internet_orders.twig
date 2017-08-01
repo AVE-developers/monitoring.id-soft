@@ -70,9 +70,10 @@
             <td style="font-size: small; text-align: center;font-weight: bold" nowrap="true">{{ doc.n_intzak }}</td>
             <td style="font-size: small; text-align: center;font-weight:bold;
             {%if doc.inactive%}color:darkred;
-            {%elseif not doc.active%}color:darkorange;
-            {%elseif doc.closed%}color:darkgrey;
-            {% else %}color:darkgreen;
+            {%elseif not    doc.active and not doc.closed%}color:darkorange;
+            {%elseif not    doc.active and     doc.closed%}color:darkgrey;
+            {%elseif        doc.active and not doc.closed%}color:darkgreen;
+            {% else %}color:red;
             {% endif %}
                     " nowrap="true">{{ doc.n_apt }}</td>
             <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
