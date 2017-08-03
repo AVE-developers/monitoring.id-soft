@@ -1,17 +1,17 @@
 SELECT
-  prihod._number :: INTEGER                                                    AS НомерПрихода,
+  prihod._number :: INTEGER                                                    AS n_doc,
   -- Номер документа Документ.УЗ_ПоступлениеТовара
-  extract(EPOCH FROM prihod._date_time AT TIME ZONE 'Europe/Moscow') :: BIGINT AS ДатаПрихода,
+  extract(EPOCH FROM prihod._date_time AT TIME ZONE 'Europe/Moscow') :: BIGINT AS d_doc,
   -- Дата документа Документ.УЗ_ПоступлениеТовара
-  apteki._code :: SMALLINT                                                     AS НомерАптеки,
+  apteki._code :: SMALLINT                                                     AS n_apt,
   -- Код аптеки Справочник.МестаХранения
-  prihod._Fld7249                                                              AS НомерВхПоставщика,
+  prihod._Fld7249                                                              AS nd_post,
   -- ВхНомерНакл	Документ.УЗ_ПоступлениеТовара.Реквизит.ВхНомерНакл
-  zepochkiKD._Fld9295                                                          AS НомерВхПоставщикаКД,
+  zepochkiKD._Fld9295                                                          AS nd_post_kd,
   -- НомерВхПоставщика	РегистрСведений.ЦепочкиПоКроссДокингу.Ресурс.НомерВхПоставщика
-  postavshik._description                                                      AS ПоставщикНаименование,
+  postavshik._description                                                      AS n_post,
   -- Поставщик Наименовние
-  postavshikKD._description                                                    AS ПоставщикКдНаименование
+  postavshikKD._description                                                    AS n_post_kd
 -- Поставщик Наименовние
 
 FROM public._document7084 prihod

@@ -1,0 +1,70 @@
+WITH lpt AS ( SELECT unnest(ARRAY ['IN_SUPP']) AS pack_type
+), ld AS ( SELECT unnest(
+                          ARRAY [{{ndocs|join(',')}}]) :: INTEGER AS id_doc
+), lp_max_archive AS ( SELECT max(tab.id) AS id_packet
+                       FROM repl.b2f_archive tab INNER JOIN lpt ON tab.pack_type = lpt.pack_type
+                       WHERE tab.enqueue_dt > make_date({{mddoc.year}}, {{mddoc.month}}, {{mddoc.day}}) AND
+                             tab.id_b2f_bc ISNULL
+                       GROUP BY tab.file_name
+), lp_max_error AS ( SELECT max(tab.id) AS id_packet
+                     FROM repl.b2f_error tab INNER JOIN lpt ON tab.pack_type = lpt.pack_type
+                     WHERE tab.enqueue_dt > make_date({{mddoc.year}}, {{mddoc.month}}, {{mddoc.day}}) AND
+                           tab.id_b2f_bc ISNULL
+                     GROUP BY tab.file_name
+), lp_max_sent AS ( SELECT max(tab.id) AS id_packet
+                    FROM repl.b2f_sent tab INNER JOIN lpt ON tab.pack_type = lpt.pack_type
+                    WHERE tab.enqueue_dt > make_date({{mddoc.year}}, {{mddoc.month}}, {{mddoc.day}}) AND
+                          tab.id_b2f_bc ISNULL
+                    GROUP BY tab.file_name
+), lp_max_out AS ( SELECT max(tab.id) AS id_packet
+                   FROM repl.b2f_out tab INNER JOIN lpt ON tab.pack_type = lpt.pack_type
+                   WHERE tab.enqueue_dt > make_date({{mddoc.year}}, {{mddoc.month}}, {{mddoc.day}}) AND
+                         tab.id_b2f_bc ISNULL
+                   GROUP BY tab.file_name
+), lp AS ( SELECT
+               tab.id :: BIGINT                                             AS id_packet,
+               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS TABLE_NAME,
+               split_part(tab.file_name, '_', 3) :: INTEGER                 AS id_doc,
+               EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS enqueue_dt,
+               EXTRACT(EPOCH FROM tab.archive_dt) :: BIGINT                 AS create_dt,
+               'пакет обработан аптекой, но статус документа в 1С не изменен, ситуация не стандартная'
+               :: TEXT                                                      AS msg
+           FROM repl.b2f_archive tab INNER JOIN lp_max_archive ON tab.id = lp_max_archive.id_packet
+           UNION
+           SELECT
+               tab.id :: BIGINT                                             AS id_packet,
+               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS TABLE_NAME,
+               split_part(tab.file_name, '_', 3) :: INTEGER                 AS id_doc,
+               EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS enqueue_dt,
+               EXTRACT(EPOCH FROM tab.create_dt) :: BIGINT                  AS create_dt,
+               tab.error_msg :: TEXT                                        AS msg
+           FROM repl.b2f_error tab INNER JOIN lp_max_error ON tab.id = lp_max_error.id_packet
+           UNION
+           SELECT
+               tab.id :: BIGINT                                             AS id_packet,
+               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS TABLE_NAME,
+               split_part(tab.file_name, '_', 3) :: INTEGER                 AS id_doc,
+               EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS enqueue_dt,
+               EXTRACT(EPOCH FROM tab.dequeue_dt) :: BIGINT                 AS create_dt,
+               'пакет отправлен на аптеку, аптека должна вернуть ответ, если долго нет отета возможно проблемы связи'
+               :: TEXT                                                      AS msg
+           FROM repl.b2f_sent tab INNER JOIN lp_max_sent ON tab.id = lp_max_sent.id_packet
+           UNION
+           SELECT
+               tab.id :: BIGINT                                             AS id_packet,
+               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS TABLE_NAME,
+               split_part(tab.file_name, '_', 3) :: INTEGER                 AS id_doc,
+               EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS enqueue_dt,
+               EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS create_dt,
+               'пакет поставлен в очередь на доставку в аптеку, аптека должна его забрать, если не забирает возможно проблемы связи'
+               :: TEXT                                                      AS msg
+           FROM repl.b2f_out tab INNER JOIN lp_max_out ON tab.id = lp_max_out.id_packet
+) SELECT
+      lp.table_name,
+      lp.id_doc,
+      lp.enqueue_dt,
+      lp.create_dt,
+      lp.msg,
+      lp.id_packet
+  FROM lp
+      INNER JOIN ld ON lp.id_doc = ld.id_doc

@@ -1,0 +1,10 @@
+<td style="font-size: small; text-align: center;font-weight:bold;" nowrap="true">
+    {{ doc.n_apt }}<br>
+    <span style="font-weight:bold;color:lightgrey;font-size: xx-small">
+        <span style="{% if doc.inactive %}color:red;{% endif %}font-size: x-small;font-weight: normal">
+            ошибка
+        </span><br>
+        <span style="{% if doc.is_active %}color:green;{% endif %}line-height:inherit;">акт.</span>&nbsp;
+        <span style="{% if doc.is_closed %}color:darkorange;{% endif %}line-height:inherit;">закр.</span>
+    </span>
+</td>

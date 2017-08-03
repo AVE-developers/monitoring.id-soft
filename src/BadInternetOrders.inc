@@ -1,4 +1,5 @@
 <?php
+//declare(strict_types=1);
 
 namespace AveWd\Console\Command;
 
@@ -34,96 +35,25 @@ class BadInternetOrders extends Command
     {
         parent::execute($input, $output);
 
-        /** @var $ave_db \PDOStatement */
 
-        $output->write('Запрос в 1С, выбираем плохие интенет-заказы: -> ');
-        try {
-            $this->_pg__ave_skd = $this->_pg__ave_skd->query(
-                file_get_contents(__DIR__ . '/../sql/pg/getBadIntenetOrders.sql'));
-        } catch (PDOException  $e) {
-            die("Ошибка: " . $e . PHP_EOL);
-        }
-        if (!$this->_pg__ave_skd) die('Запрос выполнить не удалось' . PHP_EOL);
-        if (!$this->_pg__ave_skd->rowCount()) die('0 стр.' . PHP_EOL);
-        $output->writeln($this->_pg__ave_skd->rowCount() . ' стр.');
 
-        $this->_pg__ave_skd->fetchAll(\PDO::FETCH_FUNC, function () {
-            $prihod           = \R::dispense('prihod');
-            $prihod->n_doc    = func_get_arg(0);
-            $prihod->d_doc    = func_get_arg(1);
-            $prihod->n_apt    = func_get_arg(2);
-            $prihod->n_intzak = func_get_arg(3);
-            \R::store($prihod);
-        });
-        unset($this->_pg__ave_skd);
-        $mddoc = Carbon::createFromTimestamp(
-            \R::getCell('SELECT min(d_doc) FROM prihod GROUP BY d_doc'), 'Europe/Moscow')
-            ->subDay()->startOfDay();
+        $docs = \R::getAll('SELECT * 
+                                FROM prihod a 
+                                LEFT OUTER JOIN insupp b ON a.n_doc=b.ndoc
+                                LEFT OUTER JOIN aptek c ON a.n_apt=c.id_instance
+                                ORDER BY a.n_apt ASC, a.n_doc ASC');
 
-        $output->writeln('Готовим запрос в базу репликации');
-        try {
-            $sql = (new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../sql/pg/twig')), [
-                'auto_reload'   => true,
-                'optimizations' => (int)false,
-            ]))->render('getTrasportErrors.sql.twig',
-                [
-                    'ndocs'  => \R::getCol('SELECT DISTINCT n_doc FROM prihod ORDER BY n_doc'),
-                    'mddoc'  => $mddoc,
-                    'idapts' => \R::getCol('SELECT DISTINCT n_apt FROM prihod ORDER BY n_apt'),
-                ]
-            );
-        } catch (\Twig_Error_Syntax $e) {
-            $output->writeln('<err>' . $e->getSourceContext()->getPath() . '</err>');
-            $output->writeln('<info>Строка #' . $e->getTemplateLine() . ': ' . $e->getRawMessage() . '</info>');
-        }
-        myZIP::$zPath    = __DIR__ . '/../tmp/sql.' . Carbon::now()->timestamp . '.zip';
-        myZIP::$fPath    = __DIR__ . '/../tmp/getInternetOrdersTrasportErrors.sql';
-        myZIP::$password = strtoupper(dechex(crc32($sql)));
-        file_put_contents(myZIP::$fPath, $sql);
-        myZIP::doZip();
-
-        // Делаем запрос в базу репликации
-        $output->write('Делаем запрос в базу репликации: -> ');
-        try {
-            $this->_pg__repl = $this->_pg__repl->query($sql);
-        } catch
-        (\Exception $e) {
-            die("Ошибка: " . $e);
-        }
-        if (!$this->_pg__repl) die('Запрос выполнить не удалось' . PHP_EOL);
-        if (!$this->_pg__repl->rowCount()) die('0 стр.' . PHP_EOL);
-        $output->writeln($this->_pg__repl->rowCount() . ' стр.');
-
-        $this->_pg__repl->fetchAll(\PDO::FETCH_FUNC, function () {
-            $prihod          = \R::dispense('insupp');
-            $prihod->ndoc    = func_get_arg(0);
-            $prihod->idapt   = func_get_arg(1);
-            $prihod->tname   = func_get_arg(2);
-            $prihod->npack   = func_get_arg(3);
-            $prihod->data    = func_get_arg(4);
-            $prihod->enqueue = func_get_arg(5);
-            $prihod->msg     = func_get_arg(6);
-            $prihod->inactive = func_get_arg(7);
-            $prihod->active   = func_get_arg(8);
-            $prihod->closed   = func_get_arg(9);
-            \R::store($prihod);
-        });
-        unset($this->_pg__repl);
-        //$a = \R::getAll('SELECT * FROM prihod');
-        //$b = \R::getAll('SELECT * FROM insupp');
-        $docs = \R::getAll('SELECT * FROM prihod a LEFT OUTER JOIN insupp b ON a.n_doc=b.ndoc ORDER BY a.n_apt ASC, a.n_doc ASC ');
         $html = (new \Twig_Environment(new \Twig_Loader_Filesystem(realpath(__DIR__ . '/../templates/'))))
             ->render('mail_bad_internet_orders.twig', ['docs'   => $docs,
                                                        'Carbon' => [
                                                            Carbon::now('Europe/Moscow'),
                                                            Carbon::now('Europe/Moscow'),
                                                            Carbon::now('Europe/Moscow')]]);
-        unset($docs);
+
 
         if ($input->getOption('email')) {
             $mail = new \PHPMailer();
-            file_put_contents(__DIR__ . '/../tmp/mail_bad_internet_orders.html',
-                $mail->msgHTML($html));
+            file_put_contents(__DIR__ . '/../tmp/mail_bad_internet_orders.html', $mail->msgHTML($html));
             $mail->setLanguage('ru');
             $mail->CharSet = 'utf-8';
             $mail->setFrom('transport@monitoring.id-soft', 'Монитор транспорта накладных');
@@ -135,13 +65,12 @@ class BadInternetOrders extends Command
             }
             $mail->Subject = 'Мониторинг интернет-заказов';
             if (file_exists(myZIP::$zPath)) $mail->addAttachment(myZIP::$zPath);
-            $mail->addEmbeddedImage(__DIR__ . '/../img/filter-internet-orders-img.jpg',
-                'filter-internet-orders-img', 'filter-internet-orders-img.jpg');
+            $mail->addEmbeddedImage(__DIR__ . '/../img/filter-internet-orders-img.jpg', 'filter-internet-orders-img', 'filter-internet-orders-img.jpg');
             if (!$mail->send()) die('Ошибка отправки: ' . $mail->ErrorInfo);
             else $output->writeln('Message has been sent');
         }
     }
 }
 
-/** @var Application $app */
+/** @var \Symfony\Component\Console\Application $app */
 $app->add(new BadInternetOrders('check-internet-orders'));

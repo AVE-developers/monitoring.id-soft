@@ -75,13 +75,7 @@
                 {% if doc.nd_post_kd %} <br><span
                         style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post_kd }} </span> {% endif %}
             </td>
-            <td style="font-size: small; text-align: center;font-weight:bold;
-            {%if doc.inactive%}color:darkred;
-            {%elseif not    doc.active and not doc.closed%}color:darkorange;
-            {%elseif not    doc.active and     doc.closed%}color:darkgrey;
-            {%elseif        doc.active and not doc.closed%}color:darkgreen;
-            {% else %}color:red;
-            {% endif %}                    " nowrap="true">{{ doc.n_apt }}</td>
+            {{ include('apt_num.twig',{'doc':doc}) }}
             <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
                 {% if doc.tname == 'out' %}
                     <span>В ОЧЕРЕДИ</span>
@@ -94,7 +88,7 @@
                 {% endif %}
             </td>
             <td style="font-size: x-small">
-                {% if doc.npack==null %}Пакет не найден, видимо пакет был удален в ручную после попадания в ошибки{% endif %}
+                {% if doc.npack is null %}Пакет не найден, видимо пакет был удален в ручную после попадания в ошибки{% endif %}
                 {{ doc.msg|convert_encoding('UTF-8','windows-1251') }}
             </td>
             <td style="font-size: xx-small; text-align: center" nowrap="true">{{ doc.npack }}</td>
@@ -121,10 +115,10 @@
     <li><b>приход</b> - номер документа 1С склад, поступление товара (учет в закупке)</li>
     <li><b>поставщик</b> - номер документа поставщика, приходная накладная</li>
     <li><b>аптека</b> - код аптеки в 1С склад, не номер аптеки, а именно код 1С,
-        если номер <span style="color: darkgreen;font-weight: bold;font-variant:all-small-caps;">зеленый</span> - аптека активирована, не закрыта, нет проблем связи;
-        если номер <span style="color: darkred;font-weight: bold;font-variant:all-small-caps;">красный</span> - на аптеке проблемы связи;
-        если номер <span style="color: darkgrey;font-weight: bold;font-variant:all-small-caps;">серый</span> - аптека помечена как закрытая;
-        если номер <span style="color: darkorange;font-weight: bold;font-variant:all-small-caps;">оранжевый</span> - аптека помечена как неактивна.
+        если под номером <span style="color: darkred;font-weight: bold;font-variant:all-small-caps;">ошибка</span> - на аптеке проблемы связи;
+        если под номером <span style="color: darkgreen;font-weight: bold;font-variant:all-small-caps;">акт.</span> - аптека активирована;
+        если под номером <span style="color: darkorange;font-weight: bold;font-variant:all-small-caps;">закр.</span> - аптека помечена как закрытая;
+        если эти отметки <span style="color:lightgrey;font-weight: bold;font-variant:all-small-caps;">серые</span> - данные симафоры имеют обратное значение (нет ошибки связи, не активированна, не закрыта);
     </li>
     <li><b>статус</b> - состояние транспортировки пакета</li>
     <li><b>описание</b> - поле содержит описание ошибки транспортной системы, а также коментарий к ошибке, составленный

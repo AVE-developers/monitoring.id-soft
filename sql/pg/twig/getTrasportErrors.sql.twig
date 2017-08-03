@@ -6,7 +6,10 @@
     ]
 %}
 {# set min_dt = {'year':2017,'month':7,'day':1} #}
-WITH packets AS (
+WITH list_apteki AS (
+        SELECT unnest(ARRAY[{{idapts|join(',')}}]) AS id_intance
+),
+packets AS (
     {% for key, table in tables %}
     {% if key>0 %} UNION {% endif %} SELECT
                          substring ({{table.tname}}.file_name FROM '\_\d+\_(\d+)\_') :: INTEGER as ndoc,
@@ -25,11 +28,13 @@ WITH packets AS (
         :: TEXT AS error_msg
         FROM
         repl.b2f_{{table.tname}} {{table.tname}}
+        INNER JOIN list_apteki id_instance
+        ON {{table.tname}}.id_instance = list_apteki.id_instance
         WHERE
         {{table.tname}}.enqueue_dt > make_date({{mddoc.year}}, {{mddoc.month}}, {{mddoc.day}}) :: TIMESTAMPTZ
                                                                                                AND {{table.tname}}.pack_type = 'IN_SUPP'
                                                                                                AND {{table.tname}}.id_b2f_bc IS NULL
-                                                                                                                             AND {{table.tname}}.id_instance IN ({{idapts|join(',')}})
+
     {% endfor %}
 )
 

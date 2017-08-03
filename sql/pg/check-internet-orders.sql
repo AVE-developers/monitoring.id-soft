@@ -1,12 +1,13 @@
 SELECT
-  prihod._number :: INTEGER                                                    AS НомерПрихода,
+  prihod._number :: INTEGER                                                    AS n_doc,
   -- Номер документа Документ.УЗ_ПоступлениеТовара
-  extract(EPOCH FROM prihod._date_time AT TIME ZONE 'Europe/Moscow') :: BIGINT AS ДатаПрихода,
+  extract(EPOCH FROM prihod._date_time AT TIME ZONE 'Europe/Moscow') :: BIGINT AS d_doc,
   -- Дата документа Документ.УЗ_ПоступлениеТовара
-  apteki._code :: SMALLINT                                                     AS НомерАптеки,
+  apteki._code :: SMALLINT                                                     AS n_apt,
   -- Код аптеки Справочник.МестаХранения
-  prihod._Fld9649                                                              AS НомерИнтернетЗаказа
+  prihod._Fld9649                                                              AS n_intzak
 -- Номер интернет-заказа
+
 
 FROM public._document7084 prihod
   LEFT JOIN public._reference22 apteki
