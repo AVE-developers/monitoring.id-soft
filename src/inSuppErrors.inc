@@ -51,6 +51,7 @@ class inSuppErrors extends Command
 
         if ($input->getOption('email')) {
             $mail = new \PHPMailer();
+            $mail->isMail();
             file_put_contents(__DIR__ . '/../tmp/mail_bad_normal_orders.html', $mail->msgHTML($html));
             $mail->setLanguage('ru');
             $mail->CharSet = 'utf-8';
