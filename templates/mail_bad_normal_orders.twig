@@ -76,7 +76,7 @@
                         style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post }} </span> {% endif %}
                 {% if doc.n_post_kd %} <br>{{ doc.n_post_kd|slice(0,12) }} {% endif %}
                 {% if doc.nd_post_kd %} <br><span
-                        style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post_kd }} </span> {% endif %}
+                        style="font-weight: bold;font-size: x-small;"> {{ doc.nd_post_kd }} </span>{% elseif doc.n_post_kd %}<span style="color: red">нет цепочки КД</span>{% endif %}
             </td>
             {{ include('apt_num.twig',{'doc':doc}) }}
             <td style="font-size:xx-small;text-align:center;color:3C3F41" nowrap="true">
