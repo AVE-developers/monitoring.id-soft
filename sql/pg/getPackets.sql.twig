@@ -23,7 +23,7 @@ WITH lpt AS ( SELECT unnest(ARRAY ['IN_SUPP']) AS pack_type
                    GROUP BY tab.file_name
 ), lp AS ( SELECT
                tab.id :: BIGINT                                             AS id_packet,
-               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS TABLE_NAME,
+               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS table_name,
                split_part(tab.file_name, '_', 3) :: INTEGER                 AS id_doc,
                EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS enqueue_dt,
                EXTRACT(EPOCH FROM tab.archive_dt) :: BIGINT                 AS create_dt,
@@ -33,7 +33,7 @@ WITH lpt AS ( SELECT unnest(ARRAY ['IN_SUPP']) AS pack_type
            UNION
            SELECT
                tab.id :: BIGINT                                             AS id_packet,
-               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS TABLE_NAME,
+               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS table_name,
                split_part(tab.file_name, '_', 3) :: INTEGER                 AS id_doc,
                EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS enqueue_dt,
                EXTRACT(EPOCH FROM tab.create_dt) :: BIGINT                  AS create_dt,
@@ -42,7 +42,7 @@ WITH lpt AS ( SELECT unnest(ARRAY ['IN_SUPP']) AS pack_type
            UNION
            SELECT
                tab.id :: BIGINT                                             AS id_packet,
-               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS TABLE_NAME,
+               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS table_name,
                split_part(tab.file_name, '_', 3) :: INTEGER                 AS id_doc,
                EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS enqueue_dt,
                EXTRACT(EPOCH FROM tab.dequeue_dt) :: BIGINT                 AS create_dt,
@@ -52,7 +52,7 @@ WITH lpt AS ( SELECT unnest(ARRAY ['IN_SUPP']) AS pack_type
            UNION
            SELECT
                tab.id :: BIGINT                                             AS id_packet,
-               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS TABLE_NAME,
+               split_part(tab.TABLEOID :: REGCLASS :: TEXT, '_', 2) :: TEXT AS table_name,
                split_part(tab.file_name, '_', 3) :: INTEGER                 AS id_doc,
                EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS enqueue_dt,
                EXTRACT(EPOCH FROM tab.enqueue_dt) :: BIGINT                 AS create_dt,
@@ -60,11 +60,11 @@ WITH lpt AS ( SELECT unnest(ARRAY ['IN_SUPP']) AS pack_type
                :: TEXT                                                      AS msg
            FROM repl.b2f_out tab INNER JOIN lp_max_out ON tab.id = lp_max_out.id_packet
 ) SELECT
-      lp.table_name,
-      lp.id_doc,
-      lp.enqueue_dt,
-      lp.create_dt,
-      lp.msg,
-      lp.id_packet
+      lp.table_name AS tname,
+      lp.id_doc AS ndoc,
+      lp.enqueue_dt AS enqueue,
+      lp.create_dt AS data,
+      lp.msg AS msg,
+      lp.id_packet AS npack
   FROM lp
       INNER JOIN ld ON lp.id_doc = ld.id_doc
