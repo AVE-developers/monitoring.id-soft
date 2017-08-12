@@ -224,7 +224,13 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                         realpath(
                             implode(
                                 DIRECTORY_SEPARATOR,
-                                [__DIR__, '..', 'sql', 'pg']
+                                [
+                                    __DIR__,
+                                    '..',
+                                    'sql',
+                                    'pg',
+                                    'twig'
+                                ]
                             )
                         )
                     ),
