@@ -3,7 +3,7 @@ namespace AveWd;
 
 setlocale(LC_ALL, 'ru_RU.UTF-8');
 
-set_include_path(__DIR__ . '/../vendor/');
+set_include_path(__DIR__ . '/../../vendor');
 
 require_once 'autoload.php';
 
@@ -21,11 +21,11 @@ register_shutdown_function(function(){
 Carbon::setLocale('ru');
 Carbon::setUtf8(true);
 
-require_once __DIR__ . '/myConsoleCommand.inc';
+require_once __DIR__ . '/check_orders.inc';
 require_once __DIR__ . '/myZIP.inc';
 
 $app = new Application('AVE WatchDog', '1.0.0');
 
-require_once __DIR__ . '/BadInternetOrders.inc';
-require_once __DIR__ . '/inSuppErrors.inc';
+require_once __DIR__ . '/check_internet_orders.inc';
+require_once __DIR__ . '/check_normal_orders.inc';
 

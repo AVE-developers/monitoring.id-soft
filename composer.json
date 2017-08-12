@@ -18,5 +18,10 @@
             "name": "Anton Rastyazhenko",
             "email": "rastyazhenko.a.v@366.ru"
         }
-    ]
+    ],
+    "config": {
+        "optimize-autoloader": true ,
+        "vendor-dir":"./../vendor",
+        "disable-tls" : true
+    }
 }

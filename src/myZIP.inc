@@ -2,21 +2,23 @@
 
 namespace AveWd;
 
-abstract class myZIP {
+abstract class myZIP
+{
     public static $fPath, $zPath, $password;
-    public static function doZip(?string $file_path=null, ?string $zip_path=null, ?string $password=null) : void {
-        if(!is_null($file_path))self::$fPath=$file_path;
-        if(!is_null($zip_path))self::$zPath=$zip_path;
-        if(!is_null($password))self::$password=$password;
-        ob_start();
-        system(self::command(), $ret);
-        if (!$ret) {
-            ob_end_clean();
-        } else {
-            ob_end_flush();
-        }
+
+    public static function doZip(): void
+    {
+        //$pipes = [];
+        $proc  = proc_open(self::command(), [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w']], $pipes);
+        if (is_resource($proc) && proc_close($proc)) print_r(stream_get_contents($pipes[2]));
     }
-    public static function command () : string {
-        return '7za a ' . self::$zPath . ' ' . self::$fPath . ' -p' . escapeshellarg(self::$password);
+
+    public static function command(): string
+    {
+        return escapeshellcmd('7z a ' . self::$zPath . ' ' . self::$fPath . ' -p' . escapeshellarg(self::$password));
     }
+
 }
