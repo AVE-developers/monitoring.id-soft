@@ -53,7 +53,6 @@ class check_orders extends \Symfony\Component\Console\Command\Command
     {
         parent::initialize($input, $output);
 
-        // Проверка заполенния обязательных параметров комманды
         $arr_itr_Options = (new \ArrayObject(
             $this->getDefinition()->getOptions())
         )->getIterator();
@@ -229,7 +228,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                                     '..',
                                     'sql',
                                     'pg',
-                                    'twig'
+                                    'twig',
                                 ]
                             )
                         )
@@ -293,8 +292,9 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                     crc32($sql)
                 )
             );
-            file_put_contents(myZIP::$fPath, $sql);
-            myZIP::doZip();
+            if (file_put_contents(myZIP::$fPath, $sql)) {
+                myZIP::doZip();
+            }
         }
     }
 
