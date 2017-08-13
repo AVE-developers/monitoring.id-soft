@@ -68,3 +68,4 @@ WITH lpt AS ( SELECT unnest(ARRAY ['IN_SUPP']) AS pack_type
       lp.id_packet AS npack
   FROM lp
       INNER JOIN ld ON lp.id_doc = ld.id_doc
+;

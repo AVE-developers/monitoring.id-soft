@@ -123,7 +123,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->repl->query(
+        /*$this->repl->query(
             file_get_contents(
                 implode(
                     DIRECTORY_SEPARATOR,
@@ -144,7 +144,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
             $aptek->is_active   = func_get_arg(2);
             $aptek->is_closed   = func_get_arg(3);
             \R::store($aptek);
-        });
+        });*/
         $this->getPrihod();
         $html = (new \Twig_Environment(
             new \Twig_Loader_Filesystem(
@@ -188,7 +188,10 @@ class check_orders extends \Symfony\Component\Console\Command\Command
             );
             $mail->setLanguage('ru');
             $mail->CharSet = 'utf-8';
-            $mail->setFrom('transport@monitoring.id-soft', 'Монитор транспорта накладных');
+            $mail->setFrom(
+                'transport@monitoring.id-soft',
+                'Монитор транспорта накладных'
+            );
             $mail->clearReplyTos();
 
             foreach ($input->getOption('email') as $address) {
@@ -196,7 +199,9 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                 $mail->addReplyTo($address);
             }
             $mail->Subject = $this->mailSubject;
-            if (file_exists(myZIP::$zPath)) $mail->addAttachment(myZIP::$zPath);
+            if (file_exists(myZIP::$zPath)) {
+                $mail->addAttachment(myZIP::$zPath);
+            }
             $mail->addEmbeddedImage(
                 implode(
                     DIRECTORY_SEPARATOR, [
@@ -214,48 +219,118 @@ class check_orders extends \Symfony\Component\Console\Command\Command
         }
     }
 
-    public function getPackets(): void
+    protected function getPrihod(): void
     {
         try {
-            $this->repl = $this->repl->query(
-                $sql = (new \Twig_Environment(
-                    new \Twig_Loader_Filesystem(
-                        realpath(
-                            implode(
-                                DIRECTORY_SEPARATOR,
-                                [
-                                    __DIR__,
-                                    '..',
-                                    'sql',
-                                    'pg',
-                                    'twig',
-                                ]
-                            )
+            $skd = $this->skd->query(
+                file_get_contents(
+                    implode(
+                        DIRECTORY_SEPARATOR,
+                        [
+                            __DIR__,
+                            '..',
+                            'sql',
+                            'pg',
+                            basename(get_called_class()) . '.sql',
+                        ]
+                    )
+                )
+            );
+
+            $skd->setFetchMode(
+                \PDO::FETCH_INTO,
+                \R::dispense('prihod')
+            );
+            while ($bean = $skd->fetch(\PDO::FETCH_INTO)) {
+                /** @var \RedBeanPHP\OODBBean $bean */
+                \R::store($bean);
+                $skd->setFetchMode(
+                    \PDO::FETCH_INTO,
+                    \R::dispense('prihod')
+                );
+            }
+
+        } catch (\Throwable $throwable) {
+            die($throwable);
+        } finally {
+            $this->getAptek();
+            $this->getPackets();
+        }
+    }
+
+    protected function getAptek(): void
+    {
+        $sql = file_get_contents(
+            implode(
+                DIRECTORY_SEPARATOR,
+                [
+                    __DIR__,
+                    '..',
+                    'sql',
+                    'pg',
+                    __FUNCTION__.'.sql',
+                ]
+            )
+        );
+        /** @var \PDOStatement $repl */
+        $repl = $this->repl->query($sql);
+        $repl->setFetchMode(
+            \PDO::FETCH_INTO,
+            \R::dispense('aptek')
+        );
+        while ($bean = $repl->fetch(\PDO::FETCH_INTO)) {
+            /** @var \RedBeanPHP\OODBBean $bean */
+            \R::store($bean);
+            $repl->setFetchMode(
+                \PDO::FETCH_INTO,
+                \R::dispense('aptek')
+            );
+        }
+    }
+
+    protected function getPackets(): void
+    {
+        try {
+            $sql  = (
+            new \Twig_Environment(
+                new \Twig_Loader_Filesystem(
+                    realpath(
+                        implode(
+                            DIRECTORY_SEPARATOR,
+                            [
+                                __DIR__,
+                                '..',
+                                'sql',
+                                'pg',
+                                'twig',
+                            ]
                         )
-                    ),
+                    )
+                ),
+                [
+                    'auto_reload'   => true,
+                    'optimizations' => 0,
+                ])
+            )->render('getPackets.sql.twig',
                     [
-                        'auto_reload'   => true,
-                        'optimizations' => 0,
-                    ])
-                )->render(
-                    'getPackets.sql.twig', [
                         'ndocs' => \R::getCol('SELECT DISTINCT n_doc FROM prihod ORDER BY n_doc'),
                         'mddoc' => Carbon::createFromTimestamp(
                             \R::getCell('SELECT min(d_doc) FROM prihod GROUP BY d_doc'),
                             'Europe/Moscow'
                         )->subDay()->startOfDay(),
                     ]
-                )
-            );
+                );
+            /** @var \PDOStatement $repl */
+            $repl = $this->repl->query($sql);
 
-            $this->repl->setFetchMode(
+            $repl->setFetchMode(
                 \PDO::FETCH_INTO,
                 \R::dispense('insupp')
             );
-            while ($bean = $this->repl->fetch(\PDO::FETCH_INTO)) {
+            while ($bean = $repl->fetch(\PDO::FETCH_INTO)) {
                 /** @var \RedBeanPHP\OODBBean $bean */
                 \R::store($bean);
-                $this->repl->setFetchMode(
+                $repl->setFetchMode(
                     \PDO::FETCH_INTO,
                     \R::dispense('insupp')
                 );
@@ -295,44 +370,6 @@ class check_orders extends \Symfony\Component\Console\Command\Command
             if (file_put_contents(myZIP::$fPath, $sql)) {
                 myZIP::doZip();
             }
-        }
-    }
-
-    public function getPrihod(): void
-    {
-        try {
-            $this->skd = $this->skd->query(
-                file_get_contents(
-                    implode(
-                        DIRECTORY_SEPARATOR,
-                        [
-                            __DIR__,
-                            '..',
-                            'sql',
-                            'pg',
-                            basename(get_called_class()) . '.sql',
-                        ]
-                    )
-                )
-            );
-
-            $this->skd->setFetchMode(
-                \PDO::FETCH_INTO,
-                \R::dispense('prihod')
-            );
-            while ($bean = $this->skd->fetch(\PDO::FETCH_INTO)) {
-                /** @var \RedBeanPHP\OODBBean $bean */
-                \R::store($bean);
-                $this->skd->setFetchMode(
-                    \PDO::FETCH_INTO,
-                    \R::dispense('prihod')
-                );
-            }
-
-        } catch (\Throwable $throwable) {
-            die($throwable);
-        } finally {
-            $this->getPackets();
         }
     }
 }

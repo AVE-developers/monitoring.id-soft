@@ -5,3 +5,4 @@ SELECT
   tab.is_closed :: BOOLEAN            AS is_closed
 FROM repl.fo_list tab
   LEFT JOIN repl.fo_inactive_stat stat ON tab.id_instance = stat.id_instance
+;
