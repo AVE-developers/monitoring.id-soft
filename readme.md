@@ -8,7 +8,6 @@
 
 >Примерный порядок установки:
 
----
 
 ```bash
 sudo apt install --yes git-core
