@@ -24,7 +24,7 @@ Carbon::setUtf8(true);
 require_once __DIR__ . '/check_orders.inc';
 require_once __DIR__ . '/myZIP.inc';
 
-$app = new Application('AVE WatchDog', '1.0.0');
+$app = new Application('monitoring.id-soft', '1.0.0');
 
 require_once __DIR__ . '/check_internet_orders.inc';
 require_once __DIR__ . '/check_normal_orders.inc';
