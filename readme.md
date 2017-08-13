@@ -325,18 +325,21 @@ Lists commands
 
 * `list [--raw] [--format FORMAT] [--] [<namespace>]`
 
-Порядок установки:
-sudo apt install --yes git-core
-mkdir ~/job
-cd ~/job
-git clone https://github.com/AVE-developers/monitoring.id-soft.git
-cd /tmp
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php -f ./composer-setup.php --install-dir=~/job --filename=composer.phar
-php -r "unlink('composer-setup.php');"
-cd ~/job/monitoring.id-soft
-php ~/job/composer.phar update
-php -f ./run.php help
+The list command lists all commands:
+
+  php C:\Users\Администратор\Documents\robotStarter\monitoring.id-soft\run.php list
+
+You can also display the commands for a specific namespace:
+
+  php C:\Users\Администратор\Documents\robotStarter\monitoring.id-soft\run.php list test
+
+You can also output the information in other formats by using the --format option:
+
+  php C:\Users\Администратор\Documents\robotStarter\monitoring.id-soft\run.php list --format=xml
+
+It's also possible to get raw list of commands (useful for embedding command runner):
+
+  php C:\Users\Администратор\Documents\robotStarter\monitoring.id-soft\run.php list --raw
 
 ### Arguments
 
