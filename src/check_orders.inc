@@ -123,28 +123,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /*$this->repl->query(
-            file_get_contents(
-                implode(
-                    DIRECTORY_SEPARATOR,
-                    [
-                        __DIR__,
-                        '..',
-                        'sql',
-                        'pg',
-                        'getAptek.sql',
-                    ]
-                ),
-                false
-            )
-        )->fetchAll(\PDO::FETCH_FUNC, function () {
-            $aptek              = \R::dispense('aptek');
-            $aptek->id_instance = func_get_arg(0);
-            $aptek->inactive    = func_get_arg(1);
-            $aptek->is_active   = func_get_arg(2);
-            $aptek->is_closed   = func_get_arg(3);
-            \R::store($aptek);
-        });*/
+
         $this->getPrihod();
         $html = (new \Twig_Environment(
             new \Twig_Loader_Filesystem(
