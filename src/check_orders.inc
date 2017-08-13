@@ -42,7 +42,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                         'only-work-time',
                         'w',
                         InputOption::VALUE_NONE,
-                        'Работать только в рабочее время с 9-18 с понедельника по пятницу'
+                        'Работать только в рабочее время с 9-20'
                     ),
                 ]
             )

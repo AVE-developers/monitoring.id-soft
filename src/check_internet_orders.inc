@@ -24,5 +24,5 @@ class check_internet_orders extends check_orders
     }
 }
 
-/** @var \Symfony\Component\Console\Application $app */
+/** @global \Symfony\Component\Console\Application $app */
 $app->add(new check_internet_orders('check-internet-orders'));

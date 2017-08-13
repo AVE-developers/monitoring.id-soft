@@ -20,6 +20,7 @@ php -f ./run.php help
 ```
 
 ---
+
 monitoring.id-soft 1.0.0
 ========================
 
@@ -57,7 +58,7 @@ monitoring.id-soft 1.0.0
 
 #### `--only-work-time|-w`
 
-Работать только в рабочее время с 9-18 с понедельника по пятницу
+Работать только в рабочее время с 9-20
 
 * Accept value: no
 * Is value required: no
@@ -156,7 +157,7 @@ Do not ask any interactive question
 
 #### `--only-work-time|-w`
 
-Работать только в рабочее время с 9-18 с понедельника по пятницу
+Работать только в рабочее время с 9-20
 
 * Accept value: no
 * Is value required: no

@@ -24,5 +24,5 @@ class check_normal_orders extends check_orders
     }
 }
 
-/** @var \Symfony\Component\Console\Application $app */
+/** @global \Symfony\Component\Console\Application $app */
 $app->add(new check_normal_orders('check-normal-orders'));
