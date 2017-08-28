@@ -17,18 +17,21 @@ class check_orders extends \Symfony\Component\Console\Command\Command
     protected function configure()
     {
         parent::configure();
-        $this->config = Yaml::parse(
-            file_get_contents(
-                realpath(
-                    implode(
-                        DIRECTORY_SEPARATOR, [
-                            __DIR__, '..', '..', 'confg.yml',
-                        ]
-                    )
-                )
-            ),
-            Yaml::PARSE_OBJECT_FOR_MAP
+        $config = implode(
+            DIRECTORY_SEPARATOR, [
+                __DIR__, '..', 'etc', 'config.yml',
+            ]
         );
+        if (file_exists($config)) {
+            $this->config = Yaml::parse(
+                file_get_contents(
+                    realpath($config)
+                ),
+                Yaml::PARSE_OBJECT_FOR_MAP
+            );
+        } else {
+            die('Не найден '.$config);
+        }
         $this->setDefinition(
             new InputDefinition(
                 [
@@ -93,12 +96,12 @@ class check_orders extends \Symfony\Component\Console\Command\Command
         try {
             $output->writeln('Готовим PDO: осталось попыток: ' . $PDOtryToConnect);
             $pg_options = [
-                \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_ORACLE_NULLS       => \PDO::NULL_EMPTY_STRING,
-                \PDO::ATTR_STRINGIFY_FETCHES  => false,
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_ORACLE_NULLS => \PDO::NULL_EMPTY_STRING,
+                \PDO::ATTR_STRINGIFY_FETCHES => false,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_NAMED,
             ];
-            $this->skd  = new \PDO(
+            $this->skd = new \PDO(
                 $this->config->database->ave_skd->dsn . ' connect_timeout=3 options=\'--client_encoding=UTF-8\'',
                 $this->config->database->ave_skd->username,
                 $this->config->database->ave_skd->password,
@@ -139,7 +142,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                 get_called_class()
             ) . '.twig',
             [
-                'docs'   => \R::getAll(
+                'docs' => \R::getAll(
                     'SELECT * 
                                 FROM prihod a 
                                 LEFT OUTER JOIN insupp b ON a.n_doc=b.ndoc
@@ -247,7 +250,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                     '..',
                     'sql',
                     'pg',
-                    __FUNCTION__.'.sql',
+                    __FUNCTION__ . '.sql',
                 ]
             )
         );
@@ -270,7 +273,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
     protected function getPackets(): void
     {
         try {
-            $sql  = (
+            $sql = (
             new \Twig_Environment(
                 new \Twig_Loader_Filesystem(
                     realpath(
@@ -287,7 +290,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                     )
                 ),
                 [
-                    'auto_reload'   => true,
+                    'auto_reload' => true,
                     'optimizations' => 0,
                 ])
             )->render('getPackets.sql.twig',
@@ -329,13 +332,13 @@ class check_orders extends \Symfony\Component\Console\Command\Command
         } catch (\Throwable $throwable) {
             die($throwable);
         } finally {
-            myZIP::$zPath    = implode(
+            myZIP::$zPath = implode(
                 DIRECTORY_SEPARATOR, [
                     sys_get_temp_dir(),
                     'sql.' . microtime(true) . '.zip',
                 ]
             );
-            myZIP::$fPath    = implode(
+            myZIP::$fPath = implode(
                 DIRECTORY_SEPARATOR, [
                     sys_get_temp_dir(),
                     basename(get_called_class()) . '.sql',

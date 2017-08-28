@@ -12,13 +12,12 @@ abstract class myZIP
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w']], $pipes);
-        if (is_resource($proc) && proc_close($proc)) {
-            print_r(
-                stream_get_contents(
-                    $pipes[2]
-                )
-            );
-        }
+        proc_close($proc);
+        print_r(
+            @stream_get_contents(
+                $pipes[2]
+            )
+        );
     }
 
     public static function command(): string
