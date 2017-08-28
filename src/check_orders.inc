@@ -30,7 +30,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                 Yaml::PARSE_OBJECT_FOR_MAP
             );
         } else {
-            die('Не найден '.$config);
+            die('Не найден ' . $config);
         }
         $this->setDefinition(
             new InputDefinition(
@@ -138,10 +138,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                 )
             )
         ))->render(
-            pathinfo(
-                get_called_class(),
-                PATHINFO_BASENAME
-            ) . '.twig',
+            (new \ReflectionClass($this))->getShortName() . '.twig',
             [
                 'docs' => \R::getAll(
                     'SELECT * 
@@ -164,7 +161,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                 implode(
                     DIRECTORY_SEPARATOR, [
                         sys_get_temp_dir(),
-                        pathinfo(get_called_class(),PATHINFO_BASENAME) . '.html',
+                        (new \ReflectionClass($this))->getShortName() . '.html',
                     ]
                 ),
                 $mail->msgHTML($html)
@@ -194,8 +191,8 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                         'filter-' . basename(get_called_class()) . '.jpg',
                     ]
                 ),
-                'filter-' . pathinfo(get_called_class(),PATHINFO_BASENAME) . '-img',
-                'filter-' . pathinfo(get_called_class(),PATHINFO_BASENAME) . '.jpg'
+                'filter-' . (new \ReflectionClass($this))->getShortName() . '-img',
+                'filter-' . (new \ReflectionClass($this))->getShortName() . '.jpg'
             );
             if (!$mail->send()) die('Ошибка отправки: ' . $mail->ErrorInfo);
             else $output->writeln('Сообщение отправлено');
@@ -214,7 +211,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                             '..',
                             'sql',
                             'pg',
-                            pathinfo(get_called_class(),PATHINFO_BASENAME) . '.sql',
+                            (new \ReflectionClass($this))->getShortName() . '.sql',
                         ]
                     )
                 )
@@ -342,7 +339,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
             myZIP::$fPath = implode(
                 DIRECTORY_SEPARATOR, [
                     sys_get_temp_dir(),
-                    pathinfo(get_called_class(),PATHINFO_BASENAME) . '.sql',
+                    (new \ReflectionClass($this))->getShortName() . '.sql',
                 ]
             );
             myZIP::$password = strtoupper(
