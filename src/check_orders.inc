@@ -138,8 +138,9 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                 )
             )
         ))->render(
-            basename(
-                get_called_class()
+            pathinfo(
+                get_called_class(),
+                PATHINFO_BASENAME
             ) . '.twig',
             [
                 'docs' => \R::getAll(
@@ -163,7 +164,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                 implode(
                     DIRECTORY_SEPARATOR, [
                         sys_get_temp_dir(),
-                        basename(get_called_class()) . '.html',
+                        pathinfo(get_called_class(),PATHINFO_BASENAME) . '.html',
                     ]
                 ),
                 $mail->msgHTML($html)
@@ -193,8 +194,8 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                         'filter-' . basename(get_called_class()) . '.jpg',
                     ]
                 ),
-                'filter-' . basename(get_called_class()) . '-img',
-                'filter-' . basename(get_called_class()) . '.jpg'
+                'filter-' . pathinfo(get_called_class(),PATHINFO_BASENAME) . '-img',
+                'filter-' . pathinfo(get_called_class(),PATHINFO_BASENAME) . '.jpg'
             );
             if (!$mail->send()) die('Ошибка отправки: ' . $mail->ErrorInfo);
             else $output->writeln('Сообщение отправлено');
@@ -213,7 +214,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                             '..',
                             'sql',
                             'pg',
-                            basename(get_called_class()) . '.sql',
+                            pathinfo(get_called_class(),PATHINFO_BASENAME) . '.sql',
                         ]
                     )
                 )
@@ -341,7 +342,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
             myZIP::$fPath = implode(
                 DIRECTORY_SEPARATOR, [
                     sys_get_temp_dir(),
-                    basename(get_called_class()) . '.sql',
+                    pathinfo(get_called_class(),PATHINFO_BASENAME) . '.sql',
                 ]
             );
             myZIP::$password = strtoupper(
