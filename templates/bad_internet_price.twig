@@ -1,0 +1,45 @@
+<meta charset="UTF-8">
+<table style="border-collapse: collapse;table-layout: auto;" border="1" cellspacing="0" cellpadding="5"
+       bgcolor="#f5f5f5">
+    <caption style="font-size: xx-small;text-align: right;padding:0px;margin:0px;padding-top:3px;">
+        {{include('datetime.stamp.twig')}}
+    </caption>
+    <thead>
+    <tr style="font-size: x-small;font-weight: normal;vertical-align: middle;text-align: center">
+        <th>Партия</th>
+        <th>Цена</th>
+        <th>Коэф.</th>
+        <th>Ц/шт</th>
+        <th>ПрЦ/шт</th>
+        <th>ПрЦ/п</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for doc in docs %}
+        <tr style="text-align: right">
+            <td style="text-align: center" nowrap>{{ doc.ПартияКод }}</td>
+            <td nowrap>{{ doc.Цена }}</td>
+            <td style="text-align: center" nowrap>{{ doc.Коэффициент }}</td>
+            <td nowrap>{{ doc.ЦенаЗаШтуку }}</td>
+            <td nowrap>{{ doc.ПравильнаяЦенаЗаШтуку }}</td>
+            <td nowrap>{{ doc.ПравильнаяЦенаЗаПартию }}</td>
+        </tr>
+    {%  endfor %}
+    </tbody>
+</table>
+<br><br><br>
+<hr>
+<ul style="text-align: left; font-size: x-small;"><h2>Описание полей таблицы:</h2>
+    <li><b>Партия</b> - Номер партии</li>
+    <li><b>Цена</b> - Текущая (не правильная) цена партии</li>
+    <li><b>Коэф.</b> - Коэффициент партии</li>
+    <li><b>Ц/шт</b> - Текущая (не правильная) цена партии с разбивкой на коэффициент</li>
+    <li><b>ПрЦ/шт</b> - Правильная цена партии с рабивкой на коеффициент</li>
+    <li><b>ПрЦ/п</b> - Правильная цена партии, цена которую нужно установить во время правки</li>
+</ul>
+<ul><h2>Алгоритм работы монитора</h2>
+    <li>Выбираем записи регистра "Розничные цены по партиям" у которых цена/коэффициент емеет более 2 знаков после запятой</li>
+</ul>
+<h2>Для корректировки необходимо открыть регистр сведений "Розничные уены по партиям", установить отбор по номерам партий.
+    Исправляем цену парти на цену указанную в столбце "ПрЦ/п". Сохраняем партию. Переревыгружаем документ партии.</h2>
+<img alt="Изображение отсутствует" src="cid:{{Images.filter.getFilename()}}">

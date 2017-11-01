@@ -17,7 +17,7 @@ FROM public._document7084 prihod
 WHERE prihod._fld7268rref = E'\\x80B17C208209698D4D847B33CBB4670B'
       -- ТипНакладной: Интернет-заказ (_enum2660)
       AND prihod._marked = FALSE -- Не помеченные на удаление
-      AND prihod._date_time < now() - '1 hours' :: INTERVAL
+      AND prihod._date_time < now() - '1 h' :: INTERVAL
       -- Документы, созданные более часа назад
       AND prihod._Fld7264RRef = E'\\x82CBD37640B3337E4C90036947A739E4'
       -- СтатусОфиса: Выгружен в аптеку (_enum7097)

@@ -128,6 +128,18 @@ class check_orders extends \Symfony\Component\Console\Command\Command
     {
 
         $this->getPrihod();
+        $Images = new \ArrayObject([], \ArrayObject::ARRAY_AS_PROPS | \ArrayObject::STD_PROP_LIST);
+        $Images->filter = new \SplFileInfo(
+            implode(
+                DIRECTORY_SEPARATOR,
+                [
+                    __DIR__,
+                    '..',
+                    'img',
+                    'filter-' . (new \ReflectionClass($this))->getShortName() . '.jpg',
+                ]
+            )
+        );
         $html = (new \Twig_Environment(
             new \Twig_Loader_Filesystem(
                 realpath(
@@ -152,11 +164,23 @@ class check_orders extends \Symfony\Component\Console\Command\Command
                     Carbon::now('Europe/Moscow'),
                     Carbon::now('Europe/Moscow'),
                 ],
+                'Images' => $Images,
             ]
         );
         if ($input->getOption('email')) {
-            $mail = new \PHPMailer();
-            $mail->isMail();
+            $mail = new \PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Hostname = 'monitoring.id-soft';
+            $mail->Host = $this->config->smtp->server;
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = $this->config->smtp->port;
+            $mail->SMTPDebug = 0;
+            $mail->SMTPAuth = true;
+            $mail->Debugoutput = function ($mess) use ($output) {
+                $output->write($mess);
+            };
+            $mail->Username = $this->config->smtp->username;
+            $mail->Password = $this->config->smtp->password;
             file_put_contents(
                 implode(
                     DIRECTORY_SEPARATOR, [
@@ -169,7 +193,7 @@ class check_orders extends \Symfony\Component\Console\Command\Command
             $mail->setLanguage('ru');
             $mail->CharSet = 'utf-8';
             $mail->setFrom(
-                'transport@monitoring.id-soft',
+                $this->config->smtp->username,
                 'Монитор транспорта накладных'
             );
             $mail->clearReplyTos();
@@ -182,20 +206,25 @@ class check_orders extends \Symfony\Component\Console\Command\Command
             if (file_exists(myZIP::$zPath)) {
                 $mail->addAttachment(myZIP::$zPath);
             }
-            $mail->addEmbeddedImage(
-                implode(
-                    DIRECTORY_SEPARATOR, [
-                        __DIR__,
-                        '..',
-                        'img',
-                        'filter-' . basename(get_called_class()) . '.jpg',
-                    ]
-                ),
-                'filter-' . (new \ReflectionClass($this))->getShortName() . '-img',
-                'filter-' . (new \ReflectionClass($this))->getShortName() . '.jpg'
-            );
-            if (!$mail->send()) die('Ошибка отправки: ' . $mail->ErrorInfo);
-            else $output->writeln('Сообщение отправлено');
+            foreach ($Images as $image) {
+                if ($image instanceof \SplFileInfo) {
+                    $mail->addEmbeddedImage(
+                        $image->getRealPath(),
+                        $image->getFilename(),
+                        $image->getFilename()
+                    );
+                }
+            }
+            try {
+                $mail->send();
+            } catch (\phpmailerException $e) {
+                $output->writeln($mail->ErrorInfo);
+                die($e);
+            } catch (\Throwable $e) {
+                die($e);
+            } finally {
+                $output->writeln('Сообщение отправлено');
+            }
         }
     }
 

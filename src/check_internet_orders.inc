@@ -20,7 +20,7 @@ class check_internet_orders extends check_orders
                 ]
             )
         );
-        $this->mailSubject = 'Монитор транспорта накладных';
+        $this->mailSubject = 'Монитор транспорта интернет-заказов';
     }
 }
 

@@ -20,7 +20,7 @@ class check_normal_orders extends check_orders
                 ]
             )
         );
-        $this->mailSubject = 'Мониторинг приходных накладных';
+        $this->mailSubject = 'Мониторинг транспорта приходных накладных';
     }
 }
 

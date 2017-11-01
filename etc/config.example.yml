@@ -1,0 +1,14 @@
+database:
+  ave_skd:
+    dsn: 'pgsql:dbname=database;host=address;port=number'
+    username: 'login'
+    password: 'password'
+  transport:
+    dsn: 'pgsql:dbname=database;host=address;port=number'
+    username: 'login'
+    password: 'password'
+smtp:
+  server: 'address'
+  port: number
+  username: 'login'
+  password: 'password'
